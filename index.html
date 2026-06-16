@@ -39,26 +39,28 @@
   .zone-label { font-family: ui-monospace,Menlo,monospace; font-size: 9px; letter-spacing: 3px;
     text-transform: uppercase; color: rgba(255,210,140,.45); margin-bottom: 5px; }
   .zone-value { font-size: 14px; color: #f5ecd8; line-height: 1.5; }
-  /* timeline event labels on canvas */
-  .tl-label {
-    position: fixed; pointer-events: none; z-index: 50;
-    transform: translate(-50%, -50%);
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
-    opacity: 0; transition: opacity .4s ease;
+  /* controls toggle */
+  #ctrl-toggle {
+    position: fixed; bottom: 22px; left: 22px; z-index: 60;
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(14,12,18,.7); border: 1px solid rgba(255,210,140,.25);
+    color: rgba(255,210,140,.7); font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(10px); transition: border-color .2s, color .2s;
   }
-  .tl-label.visible { opacity: 1; }
-  .tl-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    border: 1.5px solid currentColor; background: rgba(0,0,0,.6);
-    box-shadow: 0 0 6px currentColor;
+  #ctrl-toggle:hover { border-color: rgba(255,210,140,.6); color: #ffeec0; }
+  #ctrl-panel {
+    position: fixed; bottom: 72px; left: 22px; z-index: 60;
+    display: flex; flex-direction: column; gap: 12px;
+    padding: 16px 18px 18px; border-radius: 14px;
+    background: rgba(10,8,16,.88); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,210,140,.16); box-shadow: 0 14px 40px rgba(0,0,0,.6);
+    opacity: 0; pointer-events: none; transform: translateY(10px);
+    transition: opacity .22s ease, transform .22s ease;
   }
-  .tl-text {
-    font-family: ui-monospace, Menlo, monospace; font-size: 9px; letter-spacing: 1px;
-    text-transform: uppercase; white-space: nowrap;
-    background: rgba(8,6,14,.75); padding: 2px 6px; border-radius: 4px;
-    border: 1px solid rgba(255,255,255,.12);
-  }
-  .tl-year { font-size: 8px; opacity: .6; }
+  #ctrl-panel.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+  .ctrl-row { display: flex; gap: 9px; }
+  .ctrl-lbl { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,214,140,.5); margin-bottom: 4px; }
   /* camera preset buttons */
   .cam-btn {
     flex: 1; cursor: pointer; font-family: inherit; font-size: 9px; letter-spacing: 1px;
@@ -67,6 +69,51 @@
     transition: background .15s, color .15s;
   }
   .cam-btn:hover { background: rgba(255,210,140,.12); color: #f5ecd8; }
+  /* timeline branch panel */
+  #tl-panel {
+    position: fixed; left: 0; top: 0; bottom: 0; width: 100%; max-width: 420px;
+    background: rgba(6,5,12,.96); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255,210,140,.1);
+    transform: translateX(-100%); transition: transform .4s cubic-bezier(.22,1,.36,1);
+    z-index: 110; display: flex; flex-direction: column; overflow: hidden;
+  }
+  #tl-panel.open { transform: translateX(0); }
+  #tl-header { padding: 28px 24px 16px; border-bottom: 1px solid rgba(255,210,140,.08); flex-shrink: 0; }
+  #tl-back {
+    position: absolute; top: 20px; right: 20px; background: none; border: none;
+    color: rgba(255,210,140,.45); font-size: 13px; letter-spacing: 1px; cursor: pointer;
+    font-family: ui-monospace,Menlo,monospace; text-transform: uppercase; transition: color .15s;
+  }
+  #tl-back:hover { color: #ffeec0; }
+  #tl-body { flex: 1; overflow-y: auto; padding: 16px 24px 40px; }
+  /* vertical timeline branch */
+  .tl-branch {
+    position: relative; padding-left: 28px;
+    border-left: 2px solid rgba(255,210,140,.15);
+  }
+  .tl-node {
+    position: relative; margin-bottom: 28px; cursor: default;
+    animation: tlFadeIn .3s ease both;
+  }
+  @keyframes tlFadeIn { from { opacity:0; transform:translateX(-8px); } to { opacity:1; transform:none; } }
+  .tl-node::before {
+    content: ''; position: absolute; left: -35px; top: 5px;
+    width: 8px; height: 8px; border-radius: 50%;
+    border: 2px solid currentColor; background: rgba(6,5,12,.9);
+    box-shadow: 0 0 8px currentColor;
+  }
+  .tl-node-year {
+    font-family: ui-monospace,Menlo,monospace; font-size: 9px; letter-spacing: 2px;
+    text-transform: uppercase; opacity: .5; margin-bottom: 3px;
+  }
+  .tl-node-label { font-size: 14px; color: #f0e8d8; line-height: 1.4; }
+  .tl-node-note { font-size: 11px; color: rgba(235,220,190,.4); margin-top: 3px; line-height: 1.4; }
+  .tl-tip-marker {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 20px;
+    font-family: ui-monospace,Menlo,monospace; font-size: 8px; letter-spacing: 2px;
+    text-transform: uppercase; color: rgba(255,210,140,.3);
+  }
+  .tl-tip-marker::before { content:''; flex:1; height:1px; background:rgba(255,210,140,.1); }
   #zp-timeline { margin-top: 6px; }
   .tl-entry { display: flex; gap: 10px; align-items: baseline; padding: 6px 0;
     border-bottom: 1px solid rgba(255,210,140,.07); }
@@ -155,33 +202,53 @@ const TIMELINE = {
 <div style="position:fixed;inset:0;overflow:hidden;background:radial-gradient(120% 120% at 50% 42%,#0c0b14,#030305 70%);">
   <canvas id="main-canvas" style="width:100%;height:100%;"></canvas>
   <div style="position:absolute;top:26px;left:28px;animation:willFade 1.4s ease both;pointer-events:none;">
-    <div class="panel" style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,214,140,.4);">FOOK'N OATS ENTERPRISES · v2.1 · 2026</div>
+    <div class="panel" style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,214,140,.4);">FOOK'N OATS ENTERPRISES · v2.2 · 2026</div>
     <div style="font-family:Georgia,'Times New Roman',serif;font-size:34px;font-weight:400;letter-spacing:.5px;color:#f5ecd8;margin-top:6px;text-shadow:0 2px 36px rgba(255,190,90,.4);">Will-Oats-Tree</div>
     <div class="panel" style="font-size:10px;letter-spacing:.5px;color:rgba(235,220,190,.35);margin-top:5px;max-width:300px;line-height:1.5;">12-zone life encyclopedia · energy source code<br>drag · scroll · click a node</div>
   </div>
-  <div class="panel" style="position:absolute;bottom:26px;left:28px;animation:willFade 1.8s ease both;
-      display:flex;flex-direction:column;gap:13px;padding:18px 20px 20px;border-radius:16px;
-      background:rgba(14,12,18,.5);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
-      border:1px solid rgba(255,210,140,.16);box-shadow:0 18px 50px rgba(0,0,0,.55);">
-    <div style="display:flex;flex-direction:column;gap:9px;width:204px;">
+  <!-- controls toggle -->
+  <button id="ctrl-toggle" title="Controls">⚙</button>
+  <div id="ctrl-panel" class="panel">
+    <div class="ctrl-lbl">Breeze</div>
+    <div style="display:flex;flex-direction:column;gap:7px;width:200px;">
       <div style="display:flex;justify-content:space-between;align-items:baseline;">
-        <span style="font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,214,140,.6);">Breeze</span>
-        <span id="wind-label" style="font-size:11px;color:#f5ecd8;font-variant-numeric:tabular-nums;">40%</span>
+        <span id="wind-label" style="font-size:11px;color:rgba(255,214,140,.5);font-variant-numeric:tabular-nums;">40%</span>
       </div>
       <input id="wind-slider" class="slider" type="range" min="0" max="1.5" step="0.01" value="0.6">
     </div>
-    <div style="display:flex;gap:10px;">
+    <div class="ctrl-lbl" style="margin-top:4px;">Spin Speed</div>
+    <div style="display:flex;flex-direction:column;gap:7px;width:200px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;">
+        <span id="spin-label" style="font-size:11px;color:rgba(255,214,140,.5);font-variant-numeric:tabular-nums;">med</span>
+      </div>
+      <input id="spin-slider" class="slider" type="range" min="0" max="0.008" step="0.0002" value="0.0016">
+    </div>
+    <div class="ctrl-row" style="margin-top:4px;">
       <button id="btn-spin"     class="btn" style="flex:1;">Spin</button>
       <button id="btn-sparkle"  class="btn" style="flex:1;">Sparkle</button>
     </div>
-    <div style="display:flex;gap:10px;">
+    <div class="ctrl-row">
       <button id="btn-spectral" class="btn" style="flex:1;">Rainbow</button>
     </div>
-    <div style="display:flex;gap:6px;">
+    <div class="ctrl-lbl" style="margin-top:4px;">Camera</div>
+    <div class="ctrl-row">
       <button class="cam-btn" onclick="setCam('front')">Front</button>
       <button class="cam-btn" onclick="setCam('top')">Top</button>
       <button class="cam-btn" onclick="setCam('iso')">Iso</button>
       <button class="cam-btn" onclick="setCam('side')">Side</button>
+    </div>
+  </div>
+  <!-- timeline branch panel -->
+  <div id="tl-panel">
+    <div id="tl-header">
+      <button id="tl-back">← back</button>
+      <div id="tl-zone-meta" style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,210,140,.4);margin-bottom:6px;"></div>
+      <div id="tl-zone-name" style="font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:400;color:#f5ecd8;"></div>
+      <div id="tl-zone-principle" style="font-size:11px;color:rgba(235,220,190,.4);margin-top:4px;"></div>
+    </div>
+    <div id="tl-body">
+      <div class="tl-tip-marker" id="tl-tip-label">tip · oldest</div>
+      <div class="tl-branch" id="tl-branch-nodes"></div>
     </div>
   </div>
   <div id="hov-tip" style="position:fixed;left:0;top:0;pointer-events:none;z-index:200;
@@ -703,6 +770,42 @@ const TIMELINE = {
     if (_hoverIdx >= 0) openZonePanel(_hoverIdx);
   });
 
+  // ---- Touch / mobile node selection fix ----
+  // On mobile, pointermove events may not fire before 'click', so we update NDC
+  // from touchstart and do a direct raytrace hit-test on tap-end.
+  var _touchTapStart = null;
+  canvas.addEventListener('touchstart', function(e) {
+    if (e.touches.length !== 1) return;
+    var t0 = e.touches[0];
+    var r = canvas.getBoundingClientRect();
+    if (!_ndc) _ndc = new THREE.Vector2();
+    _ndc.x = ((t0.clientX - r.left) / r.width)  * 2 - 1;
+    _ndc.y = -((t0.clientY - r.top)  / r.height) * 2 + 1;
+    _touchTapStart = { x: t0.clientX, y: t0.clientY };
+  }, { passive: true });
+
+  canvas.addEventListener('touchend', function(e) {
+    if (!_touchTapStart || e.changedTouches.length !== 1) return;
+    var t0 = e.changedTouches[0];
+    var dist = Math.hypot(t0.clientX - _touchTapStart.x, t0.clientY - _touchTapStart.y);
+    _touchTapStart = null;
+    if (dist > 12) return; // it was a drag, not a tap
+    // refresh NDC from final touch position
+    var r = canvas.getBoundingClientRect();
+    if (!_ndc) _ndc = new THREE.Vector2();
+    _ndc.x = ((t0.clientX - r.left) / r.width)  * 2 - 1;
+    _ndc.y = -((t0.clientY - r.top)  / r.height) * 2 + 1;
+    // raycast with larger threshold for fat fingers
+    var tRay = new THREE.Raycaster();
+    tRay.params.Points = { threshold: 0.5 };
+    tRay.setFromCamera(_ndc, camera);
+    var tHits = tRay.intersectObjects(ringGrp.children, false);
+    if (tHits.length > 0) {
+      var hi = ringGrp.children.indexOf(tHits[0].object);
+      if (hi >= 0) openZonePanel(hi);
+    }
+  }, { passive: true });
+
   // store one representative world-space point per vine seg per zone for timeline labels
   // zoneVinePoints[zoneIdx] = array of THREE.Vector3 from tip→root (oldest→newest)
   var zoneVinePoints = [];
@@ -780,6 +883,7 @@ const TIMELINE = {
   function openZonePanel(idx) {
     var zoneIdx = attach[idx].zoneIdx;
     var zone = ZONES[zoneIdx];
+    // populate the small right-side panel (still shown, now acts as a brief)
     document.getElementById('zp-id').textContent = 'Zone ' + zone.id;
     document.getElementById('zp-name').textContent = zone.name;
     document.getElementById('zp-name').style.color = zone.hex;
@@ -788,7 +892,7 @@ const TIMELINE = {
     document.getElementById('zp-oil').textContent = zone.oil;
     document.getElementById('zone-panel-header').style.borderBottomColor = zone.hex + '44';
     document.getElementById('zone-panel-close').style.color = zone.hex;
-    // timeline entries in panel
+    // timeline entries in small panel (newest→oldest visual)
     var entries = TIMELINE[zoneIdx] || [];
     var html = entries.slice().reverse().map(function(ev) {
       return '<div class="tl-entry"><span class="tl-entry-year">'+ev.year+'</span><span class="tl-entry-label">'+ev.label+'</span></div>';
@@ -797,21 +901,43 @@ const TIMELINE = {
     document.getElementById('zone-panel').classList.add('open');
     setSolo(zoneIdx);
     showTlLabels(zoneIdx);
+    // zoom camera to branch and open the full timeline branch panel
+    zoomToBranch(zoneIdx);
   }
   document.getElementById('zone-panel-close').addEventListener('click', function() {
-    document.getElementById('zone-panel').classList.remove('open');
-    clearSolo();
+    closeTlPanel();
   });
 
   var tip = document.getElementById('hov-tip');
 
+  // controls toggle
+  var ctrlToggle = document.getElementById('ctrl-toggle');
+  var ctrlPanel  = document.getElementById('ctrl-panel');
+  var _ctrlOpen  = false;
+  ctrlToggle.addEventListener('click', function() {
+    _ctrlOpen = !_ctrlOpen;
+    ctrlPanel.classList.toggle('open', _ctrlOpen);
+    ctrlToggle.style.color = _ctrlOpen ? '#ffeec0' : 'rgba(255,210,140,.7)';
+    ctrlToggle.style.borderColor = _ctrlOpen ? 'rgba(255,210,140,.55)' : 'rgba(255,210,140,.25)';
+  });
+
   // controls
   var _sparkleOn = true;
+  var _spinSpeed = 0.0016;
   var windSlider = document.getElementById('wind-slider');
   var windLabel  = document.getElementById('wind-label');
   windSlider.addEventListener('input', function(e) {
     _wind = parseFloat(e.target.value);
     windLabel.textContent = Math.round((_wind/1.5)*100) + '%';
+  });
+  var spinSlider = document.getElementById('spin-slider');
+  var spinLabel  = document.getElementById('spin-label');
+  var _spinLabels = ['off','slow','med','fast','max'];
+  spinSlider.addEventListener('input', function(e) {
+    _spinSpeed = parseFloat(e.target.value);
+    var pct = _spinSpeed / 0.008;
+    var li = Math.round(pct * (_spinLabels.length-1));
+    spinLabel.textContent = _spinLabels[li];
   });
 
   function styleBtn(id, on, onColor) {
@@ -840,6 +966,77 @@ const TIMELINE = {
     if (preset === 'iso')   { orb.tTheta = Math.PI/4; orb.tPhi = 0.88;  orb.tRadius = 18; }
     if (preset === 'side')  { orb.tTheta = Math.PI/2; orb.tPhi = 1.32;  orb.tRadius = 16; }
   };
+
+  // timeline branch panel
+  var tlPanel  = document.getElementById('tl-panel');
+  var tlBack   = document.getElementById('tl-back');
+  tlBack.addEventListener('click', function() { closeTlPanel(); });
+
+  function openTlPanel(zoneIdx) {
+    var zone = ZONES[zoneIdx];
+    document.getElementById('tl-zone-meta').textContent = 'Zone ' + zone.id + ' · ' + zone.wavelength;
+    document.getElementById('tl-zone-name').textContent = zone.name;
+    document.getElementById('tl-zone-name').style.color = zone.hex;
+    document.getElementById('tl-zone-principle').textContent = zone.principle;
+    document.getElementById('tl-tip-label').style.color = zone.hex + '66';
+    // entries: oldest at tip (index 0) → newest at trunk (end); display oldest first (top)
+    var entries = (TIMELINE[zoneIdx] || []).slice(); // already oldest→newest in data
+    var nodesEl = document.getElementById('tl-branch-nodes');
+    if (!entries.length) {
+      nodesEl.innerHTML = '<div style="font-size:13px;color:rgba(255,210,140,.3);font-style:italic;padding:8px 0;">No events yet</div>';
+    } else {
+      nodesEl.innerHTML = entries.map(function(ev, ei) {
+        return '<div class="tl-node" style="color:'+zone.hex+';animation-delay:'+(ei*0.07)+'s">'
+          + '<div class="tl-node-year">'+ev.year+'</div>'
+          + '<div class="tl-node-label">'+ev.label+'</div>'
+          + (ev.note ? '<div class="tl-node-note">'+ev.note+'</div>' : '')
+          + '</div>';
+      }).join('');
+    }
+    tlPanel.classList.add('open');
+  }
+
+  function closeTlPanel() {
+    tlPanel.classList.remove('open');
+    // restore camera to pre-zoom state
+    if (_zoomRestoreOrb) {
+      orb.tTheta  = _zoomRestoreOrb.theta;
+      orb.tPhi    = _zoomRestoreOrb.phi;
+      orb.tRadius = _zoomRestoreOrb.radius;
+      orb.target.copy(_zoomRestoreOrb.target);
+      _zoomRestoreOrb = null;
+    }
+    clearSolo();
+    document.getElementById('zone-panel').classList.remove('open');
+  }
+
+  // zoom to branch
+  var _zoomRestoreOrb = null;
+  function zoomToBranch(zoneIdx) {
+    var zone = ZONES[zoneIdx];
+    // save current camera state for restore on back
+    _zoomRestoreOrb = {
+      theta:  orb.theta,
+      phi:    orb.phi,
+      radius: orb.radius,
+      target: orb.target.clone()
+    };
+    _autoRot = false; refreshBtns();
+    // bough runs at zone.angle around Y axis, outward from trunk
+    // aim camera from the opposite side of the bough angle, slightly elevated
+    var bAngle = zone.angle; // radians around Y
+    orb.tTheta  = bAngle + Math.PI; // look from the other side toward the bough
+    orb.tPhi    = 1.05;  // slightly above horizontal
+    orb.tRadius = 10;    // zoom in close
+    // target: center of that bough's region (roughly halfway up the tree, outward)
+    orb.target.set(
+      Math.sin(bAngle) * 3,
+      6.5,
+      Math.cos(bAngle) * 3
+    );
+    // open the panel after a short delay (camera is lerping)
+    setTimeout(function() { openTlPanel(zoneIdx); }, 500);
+  }
 
   window.addEventListener('resize', function() {
     var w = canvas.clientWidth||window.innerWidth, h = canvas.clientHeight||window.innerHeight;
@@ -920,7 +1117,7 @@ const TIMELINE = {
     }
 
     // orbit
-    if (_autoRot && !_dragging) orb.tTheta += 0.0016;
+    if (_autoRot && !_dragging) orb.tTheta += _spinSpeed;
     orb.theta  += (orb.tTheta  - orb.theta)  * 0.1;
     orb.phi    += (orb.tPhi    - orb.phi)    * 0.1;
     orb.radius += (orb.tRadius - orb.radius) * 0.1;
