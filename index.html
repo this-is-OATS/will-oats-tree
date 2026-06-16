@@ -202,7 +202,7 @@ const TIMELINE = {
 <div style="position:fixed;inset:0;overflow:hidden;background:radial-gradient(120% 120% at 50% 42%,#0c0b14,#030305 70%);">
   <canvas id="main-canvas" style="width:100%;height:100%;"></canvas>
   <div style="position:absolute;top:26px;left:28px;animation:willFade 1.4s ease both;pointer-events:none;">
-    <div class="panel" style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,214,140,.4);">FOOK'N OATS ENTERPRISES · v2.4 · 2026</div>
+    <div class="panel" style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,214,140,.4);">FOOK'N OATS ENTERPRISES · v2.5 · 2026</div>
     <div style="font-family:Georgia,'Times New Roman',serif;font-size:34px;font-weight:400;letter-spacing:.5px;color:#f5ecd8;margin-top:6px;text-shadow:0 2px 36px rgba(255,190,90,.4);">Will-Oats-Tree</div>
     <div class="panel" style="font-size:10px;letter-spacing:.5px;color:rgba(235,220,190,.35);margin-top:5px;max-width:300px;line-height:1.5;">12-zone life encyclopedia · energy source code<br>drag · scroll · shift+scroll to crane up/down · click a node</div>
   </div>
@@ -1004,14 +1004,13 @@ const TIMELINE = {
     _spectral = !_spectral; wms.forEach(function(m){ m.uSpectral.value = _spectral ? 1 : 0; }); refreshBtns();
   });
 
-  // camera presets — exposed globally for onclick
+  // camera presets — exposed globally for onclick; spin stays as-is
   window.setCam = function(preset) {
-    _autoRot = false; refreshBtns();
-    if (preset === 'front') { orb.tTheta = 0;         orb.tPhi = 1.32;  orb.tRadius = 16; }
-    if (preset === 'top')   { orb.tTheta = 0;         orb.tPhi = 0.04;  orb.tRadius = 20; }
-    if (preset === 'iso')   { orb.tTheta = Math.PI/4; orb.tPhi = 0.88;  orb.tRadius = 18; }
-    if (preset === 'side')   { orb.tTheta = Math.PI/2; orb.tPhi = 1.32;  orb.tRadius = 16; }
-    if (preset === 'bottom') { orb.tTheta = 0; orb.tPhi = Math.PI - 0.08; orb.tRadius = 18; _tTargetY = 0.5; }
+    if (preset === 'front')  { orb.tTheta = 0;         orb.tPhi = 1.32;          orb.tRadius = 16; }
+    if (preset === 'top')    { orb.tTheta = 0;         orb.tPhi = 0.04;          orb.tRadius = 20; }
+    if (preset === 'iso')    { orb.tTheta = Math.PI/4; orb.tPhi = 0.88;          orb.tRadius = 18; }
+    if (preset === 'side')   { orb.tTheta = Math.PI/2; orb.tPhi = 1.32;          orb.tRadius = 16; }
+    if (preset === 'bottom') { orb.tTheta = 0;         orb.tPhi = Math.PI - 0.08; orb.tRadius = 18; _tTargetY = 0.5; }
   };
 
   // timeline branch panel
