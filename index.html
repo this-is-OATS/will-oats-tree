@@ -202,9 +202,9 @@ const TIMELINE = {
 <div style="position:fixed;inset:0;overflow:hidden;background:radial-gradient(120% 120% at 50% 42%,#0c0b14,#030305 70%);">
   <canvas id="main-canvas" style="width:100%;height:100%;"></canvas>
   <div style="position:absolute;top:26px;left:28px;animation:willFade 1.4s ease both;pointer-events:none;">
-    <div class="panel" style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,214,140,.4);">FOOK'N OATS ENTERPRISES · v2.2 · 2026</div>
+    <div class="panel" style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,214,140,.4);">FOOK'N OATS ENTERPRISES · v2.3 · 2026</div>
     <div style="font-family:Georgia,'Times New Roman',serif;font-size:34px;font-weight:400;letter-spacing:.5px;color:#f5ecd8;margin-top:6px;text-shadow:0 2px 36px rgba(255,190,90,.4);">Will-Oats-Tree</div>
-    <div class="panel" style="font-size:10px;letter-spacing:.5px;color:rgba(235,220,190,.35);margin-top:5px;max-width:300px;line-height:1.5;">12-zone life encyclopedia · energy source code<br>drag · scroll · click a node</div>
+    <div class="panel" style="font-size:10px;letter-spacing:.5px;color:rgba(235,220,190,.35);margin-top:5px;max-width:300px;line-height:1.5;">12-zone life encyclopedia · energy source code<br>drag · scroll · shift+scroll to crane up/down · click a node</div>
   </div>
   <!-- controls toggle -->
   <button id="ctrl-toggle" title="Controls">⚙</button>
@@ -360,10 +360,55 @@ const TIMELINE = {
   });
   canvas.addEventListener('pointerup',     function() { _dragging = false; });
   canvas.addEventListener('pointercancel', function() { _dragging = false; });
+  // scroll: zoom (radius). shift+scroll OR two-finger vertical: crane up/down (target.y)
+  var _tTargetY = orb.target.y;
   canvas.addEventListener('wheel', function(e) {
     e.preventDefault();
-    orb.tRadius = Math.min(40, Math.max(6.5, orb.tRadius * (1 + Math.sign(e.deltaY)*0.09)));
+    var dy = e.deltaY;
+    if (e.shiftKey || (e.deltaX === 0 && Math.abs(dy) > 0 && e.ctrlKey === false && e.altKey === false && e.metaKey === false && Math.abs(e.deltaX) < 2 && e.shiftKey)) {
+      // shift+scroll = crane (move target up/down in world space)
+      _tTargetY = Math.min(14, Math.max(-2, _tTargetY - dy * 0.04));
+    } else if (e.shiftKey) {
+      _tTargetY = Math.min(14, Math.max(-2, _tTargetY - dy * 0.04));
+    } else {
+      orb.tRadius = Math.min(40, Math.max(4, orb.tRadius * (1 + Math.sign(dy)*0.09)));
+    }
   }, { passive: false });
+
+  // two-finger pinch on mobile = zoom already works via pointer scale
+  // two-finger vertical swipe on mobile = crane
+  var _touchY0 = null, _touch2Y0 = null, _touchR0 = null;
+  canvas.addEventListener('touchstart', function(e) {
+    if (e.touches.length === 2) {
+      _touch2Y0 = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      _touchR0 = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+    }
+  }, { passive: true });
+  canvas.addEventListener('touchmove', function(e) {
+    if (e.touches.length === 2) {
+      var midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      var dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      if (_touch2Y0 !== null) {
+        // pinch = zoom
+        if (_touchR0 && Math.abs(dist - _touchR0) > 4) {
+          orb.tRadius = Math.min(40, Math.max(4, orb.tRadius * (_touchR0 / dist)));
+          _touchR0 = dist;
+        }
+        // two-finger vertical pan = crane
+        var dyCrane = _touch2Y0 - midY;
+        if (Math.abs(dyCrane) > 2) {
+          _tTargetY = Math.min(14, Math.max(-2, _tTargetY + dyCrane * 0.04));
+          _touch2Y0 = midY;
+        }
+      }
+    }
+  }, { passive: true });
 
   // sky dome
   scene.add(new THREE.Mesh(
@@ -1121,6 +1166,7 @@ const TIMELINE = {
     orb.theta  += (orb.tTheta  - orb.theta)  * 0.1;
     orb.phi    += (orb.tPhi    - orb.phi)    * 0.1;
     orb.radius += (orb.tRadius - orb.radius) * 0.1;
+    orb.target.y += (_tTargetY - orb.target.y) * 0.1;
     camera.position.set(
       orb.target.x + orb.radius*Math.sin(orb.phi)*Math.sin(orb.theta),
       orb.target.y + orb.radius*Math.cos(orb.phi),
