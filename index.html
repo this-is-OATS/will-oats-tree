@@ -41,21 +41,21 @@
   .zone-value { font-size: 14px; color: #f5ecd8; line-height: 1.5; }
   /* controls toggle */
   #ctrl-toggle {
-    position: fixed; bottom: 22px; left: 22px; z-index: 60;
-    width: 40px; height: 40px; border-radius: 50%;
+    position: fixed; top: 120px; left: 22px; z-index: 60;
+    width: 34px; height: 34px; border-radius: 50%;
     background: rgba(14,12,18,.7); border: 1px solid rgba(255,210,140,.25);
-    color: rgba(255,210,140,.7); font-size: 18px; cursor: pointer;
+    color: rgba(255,210,140,.7); font-size: 16px; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     backdrop-filter: blur(10px); transition: border-color .2s, color .2s;
   }
   #ctrl-toggle:hover { border-color: rgba(255,210,140,.6); color: #ffeec0; }
   #ctrl-panel {
-    position: fixed; bottom: 72px; left: 22px; z-index: 60;
+    position: fixed; top: 162px; left: 22px; z-index: 60;
     display: flex; flex-direction: column; gap: 12px;
     padding: 16px 18px 18px; border-radius: 14px;
     background: rgba(10,8,16,.88); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255,210,140,.16); box-shadow: 0 14px 40px rgba(0,0,0,.6);
-    opacity: 0; pointer-events: none; transform: translateY(10px);
+    opacity: 0; pointer-events: none; transform: translateY(-6px);
     transition: opacity .22s ease, transform .22s ease;
   }
   #ctrl-panel.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
@@ -202,7 +202,7 @@ const TIMELINE = {
 <div style="position:fixed;inset:0;overflow:hidden;background:radial-gradient(120% 120% at 50% 42%,#0c0b14,#030305 70%);">
   <canvas id="main-canvas" style="width:100%;height:100%;"></canvas>
   <div style="position:absolute;top:26px;left:28px;animation:willFade 1.4s ease both;pointer-events:none;">
-    <div class="panel" style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,214,140,.4);">FOOK'N OATS ENTERPRISES · v2.5 · 2026</div>
+    <div class="panel" style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,214,140,.4);">FOOK'N OATS ENTERPRISES · v2.6 · 2026</div>
     <div style="font-family:Georgia,'Times New Roman',serif;font-size:34px;font-weight:400;letter-spacing:.5px;color:#f5ecd8;margin-top:6px;text-shadow:0 2px 36px rgba(255,190,90,.4);">Will-Oats-Tree</div>
     <div class="panel" style="font-size:10px;letter-spacing:.5px;color:rgba(235,220,190,.35);margin-top:5px;max-width:300px;line-height:1.5;">12-zone life encyclopedia · energy source code<br>drag · scroll · shift+scroll to crane up/down · click a node</div>
   </div>
@@ -959,7 +959,10 @@ const TIMELINE = {
   // controls toggle
   var ctrlToggle = document.getElementById('ctrl-toggle');
   var ctrlPanel  = document.getElementById('ctrl-panel');
-  var _ctrlOpen  = false;
+  var _ctrlOpen  = true;
+  ctrlPanel.classList.add('open');
+  ctrlToggle.style.color = '#ffeec0';
+  ctrlToggle.style.borderColor = 'rgba(255,210,140,.55)';
   ctrlToggle.addEventListener('click', function() {
     _ctrlOpen = !_ctrlOpen;
     ctrlPanel.classList.toggle('open', _ctrlOpen);
