@@ -19,6 +19,19 @@
     border: 1px solid #b9882e; cursor: pointer; }
   .btn { transition: background .2s, border-color .2s, color .2s; cursor: pointer; font-family: inherit;
     font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; padding: 9px 0; border-radius: 9px; border: 1px solid; }
+  /* hover card */
+  #hov-card {
+    position: fixed; pointer-events: none; z-index: 200;
+    padding: 11px 16px 13px; border-radius: 12px;
+    background: rgba(10,8,16,.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,210,140,.2); box-shadow: 0 8px 28px rgba(0,0,0,.6);
+    opacity: 0; transition: opacity .15s ease; white-space: nowrap;
+    transform: translate(-50%, calc(-100% - 14px));
+  }
+  #hov-card.visible { opacity: 1; }
+  #hov-card-num  { font-family: ui-monospace,Menlo,monospace; font-size: 8px; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,210,140,.4); margin-bottom: 3px; }
+  #hov-card-name { font-family: Georgia,'Times New Roman',serif; font-size: 20px; font-weight: 400; margin-bottom: 2px; }
+  #hov-card-oil  { font-size: 10px; letter-spacing: .5px; color: rgba(235,220,190,.45); }
   #zone-panel {
     position: fixed; right: 0; top: 0; bottom: 0; width: 320px;
     background: rgba(10,8,15,.92); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
@@ -176,33 +189,16 @@ const TIMELINE = {
 };
 </script>
 
-<div id="zone-panel">
-  <div id="zone-panel-header">
-    <button id="zone-panel-close">×</button>
-    <div class="panel" id="zp-id" style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,210,140,.4);margin-bottom:6px;"></div>
-    <div id="zp-name" style="font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:400;color:#f5ecd8;"></div>
-    <div id="zp-wave" class="panel" style="font-size:10px;letter-spacing:1px;color:rgba(255,210,140,.4);margin-top:4px;"></div>
-  </div>
-  <div id="zone-panel-body">
-    <div class="zone-field">
-      <div class="zone-label">Principle</div>
-      <div class="zone-value" id="zp-principle"></div>
-    </div>
-    <div class="zone-field">
-      <div class="zone-label">Young Living Oil</div>
-      <div class="zone-value" id="zp-oil"></div>
-    </div>
-    <div class="zone-field" id="zp-timeline">
-      <div class="zone-label">Timeline · tip = oldest</div>
-      <div id="zp-timeline-entries"></div>
-    </div>
-  </div>
+<div id="hov-card">
+  <div id="hov-card-num"></div>
+  <div id="hov-card-name"></div>
+  <div id="hov-card-oil"></div>
 </div>
 
 <div style="position:fixed;inset:0;overflow:hidden;background:radial-gradient(120% 120% at 50% 42%,#0c0b14,#030305 70%);">
   <canvas id="main-canvas" style="width:100%;height:100%;"></canvas>
   <div style="position:absolute;top:26px;left:28px;animation:willFade 1.4s ease both;pointer-events:none;">
-    <div class="panel" style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,214,140,.4);">FOOK'N OATS ENTERPRISES · v2.6 · 2026</div>
+    <div class="panel" style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,214,140,.4);">FOOK'N OATS ENTERPRISES · v2.7 · 2026</div>
     <div style="font-family:Georgia,'Times New Roman',serif;font-size:34px;font-weight:400;letter-spacing:.5px;color:#f5ecd8;margin-top:6px;text-shadow:0 2px 36px rgba(255,190,90,.4);">Will-Oats-Tree</div>
     <div class="panel" style="font-size:10px;letter-spacing:.5px;color:rgba(235,220,190,.35);margin-top:5px;max-width:300px;line-height:1.5;">12-zone life encyclopedia · energy source code<br>drag · scroll · shift+scroll to crane up/down · click a node</div>
   </div>
@@ -252,11 +248,6 @@ const TIMELINE = {
       <div class="tl-branch" id="tl-branch-nodes"></div>
     </div>
   </div>
-  <div id="hov-tip" style="position:fixed;left:0;top:0;pointer-events:none;z-index:200;
-      padding:7px 13px;border-radius:10px;font-family:ui-monospace,Menlo,monospace;font-size:12px;
-      letter-spacing:1.5px;text-transform:uppercase;color:#fdf3d6;
-      background:rgba(16,13,10,.85);border:1px solid #ffd877;box-shadow:0 6px 22px rgba(0,0,0,.5);
-      transform:translate(-50%,-150%);opacity:0;transition:opacity .16s ease;white-space:nowrap;"></div>
 </div>
 
 <script>
@@ -809,7 +800,7 @@ const TIMELINE = {
   });
   canvas.addEventListener('pointerleave', function() {
     _ndc = null; _lastMX = null;
-    document.getElementById('hov-tip').style.opacity = '0';
+    hideHovCard();
     _hoverIdx = -1; canvas.style.cursor = 'default';
   });
   canvas.addEventListener('click', function() {
@@ -926,35 +917,36 @@ const TIMELINE = {
     clearTlLabels();
   }
 
+  // click a node → zoom to branch + open timeline panel (no right panel)
   function openZonePanel(idx) {
     var zoneIdx = attach[idx].zoneIdx;
-    var zone = ZONES[zoneIdx];
-    // populate the small right-side panel (still shown, now acts as a brief)
-    document.getElementById('zp-id').textContent = 'Zone ' + zone.id;
-    document.getElementById('zp-name').textContent = zone.name;
-    document.getElementById('zp-name').style.color = zone.hex;
-    document.getElementById('zp-wave').textContent = zone.wavelength;
-    document.getElementById('zp-principle').textContent = zone.principle;
-    document.getElementById('zp-oil').textContent = zone.oil;
-    document.getElementById('zone-panel-header').style.borderBottomColor = zone.hex + '44';
-    document.getElementById('zone-panel-close').style.color = zone.hex;
-    // timeline entries in small panel (newest→oldest visual)
-    var entries = TIMELINE[zoneIdx] || [];
-    var html = entries.slice().reverse().map(function(ev) {
-      return '<div class="tl-entry"><span class="tl-entry-year">'+ev.year+'</span><span class="tl-entry-label">'+ev.label+'</span></div>';
-    }).join('');
-    document.getElementById('zp-timeline-entries').innerHTML = html || '<div style="font-size:12px;color:rgba(255,210,140,.3);font-style:italic;">No events yet</div>';
-    document.getElementById('zone-panel').classList.add('open');
+    hideHovCard();
     setSolo(zoneIdx);
     showTlLabels(zoneIdx);
-    // zoom camera to branch and open the full timeline branch panel
     zoomToBranch(zoneIdx);
   }
-  document.getElementById('zone-panel-close').addEventListener('click', function() {
-    closeTlPanel();
-  });
 
-  var tip = document.getElementById('hov-tip');
+  // hover card
+  var hovCard     = document.getElementById('hov-card');
+  var hovCardNum  = document.getElementById('hov-card-num');
+  var hovCardName = document.getElementById('hov-card-name');
+  var hovCardOil  = document.getElementById('hov-card-oil');
+
+  function showHovCard(zoneIdx, x, y) {
+    var zone = ZONES[zoneIdx];
+    hovCardNum.textContent  = 'Zone ' + zone.id + ' · ' + zone.wavelength;
+    hovCardName.textContent = zone.name;
+    hovCardName.style.color = zone.hex;
+    hovCardOil.textContent  = zone.oil + ' · ' + zone.principle;
+    hovCard.style.borderColor = zone.hex + '55';
+    hovCard.style.boxShadow = '0 8px 28px rgba(0,0,0,.6), 0 0 18px ' + zone.hex + '33';
+    hovCard.style.left = x + 'px';
+    hovCard.style.top  = y + 'px';
+    hovCard.classList.add('visible');
+  }
+  function hideHovCard() {
+    hovCard.classList.remove('visible');
+  }
 
   // controls toggle
   var ctrlToggle = document.getElementById('ctrl-toggle');
@@ -1056,7 +1048,7 @@ const TIMELINE = {
       _zoomRestoreOrb = null;
     }
     clearSolo();
-    document.getElementById('zone-panel').classList.remove('open');
+    // zone-panel removed; nothing to close on right side
   }
 
   // zoom to branch
@@ -1136,7 +1128,7 @@ const TIMELINE = {
       fo.m.material.opacity = fo.base*(0.6+0.4*Math.sin(t*0.4+fo.ph));
     }
 
-    // hover
+    // hover card
     var hov = -1;
     if (_ndc) {
       ray.setFromCamera(_ndc, camera);
@@ -1146,15 +1138,11 @@ const TIMELINE = {
     if (hov !== _hoverIdx) {
       _hoverIdx = hov;
       canvas.style.cursor = hov >= 0 ? 'pointer' : 'default';
-      if (hov >= 0) {
-        var zinfo = ZONES[attach[hov].zoneIdx];
-        tip.textContent = zinfo.name + ' · ' + zinfo.oil;
-        tip.style.borderColor = zinfo.hex;
-        tip.style.boxShadow = '0 6px 22px rgba(0,0,0,.5), 0 0 16px ' + zinfo.hex;
-        tip.style.opacity = '1';
-      } else { tip.style.opacity = '0'; }
+      if (hov < 0) hideHovCard();
     }
-    if (hov >= 0 && _mouseClient) { tip.style.left = _mouseClient.x+'px'; tip.style.top = _mouseClient.y+'px'; }
+    if (hov >= 0 && _mouseClient) {
+      showHovCard(attach[hov].zoneIdx, _mouseClient.x, _mouseClient.y);
+    }
 
     // ring pulse
     for (var ri = 0; ri < ringGrp.children.length; ri++) {
