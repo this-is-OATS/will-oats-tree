@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Will-Oats-Tree</title>
+<title>Will-Oats-Tree v2.1 · FOE</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; width: 100%; overflow: hidden; background: #030305; }
@@ -39,6 +39,40 @@
   .zone-label { font-family: ui-monospace,Menlo,monospace; font-size: 9px; letter-spacing: 3px;
     text-transform: uppercase; color: rgba(255,210,140,.45); margin-bottom: 5px; }
   .zone-value { font-size: 14px; color: #f5ecd8; line-height: 1.5; }
+  /* timeline event labels on canvas */
+  .tl-label {
+    position: fixed; pointer-events: none; z-index: 50;
+    transform: translate(-50%, -50%);
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    opacity: 0; transition: opacity .4s ease;
+  }
+  .tl-label.visible { opacity: 1; }
+  .tl-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    border: 1.5px solid currentColor; background: rgba(0,0,0,.6);
+    box-shadow: 0 0 6px currentColor;
+  }
+  .tl-text {
+    font-family: ui-monospace, Menlo, monospace; font-size: 9px; letter-spacing: 1px;
+    text-transform: uppercase; white-space: nowrap;
+    background: rgba(8,6,14,.75); padding: 2px 6px; border-radius: 4px;
+    border: 1px solid rgba(255,255,255,.12);
+  }
+  .tl-year { font-size: 8px; opacity: .6; }
+  /* camera preset buttons */
+  .cam-btn {
+    flex: 1; cursor: pointer; font-family: inherit; font-size: 9px; letter-spacing: 1px;
+    text-transform: uppercase; padding: 7px 0; border-radius: 7px; border: 1px solid rgba(255,210,140,.2);
+    color: rgba(255,220,160,.7); background: rgba(255,210,140,.04);
+    transition: background .15s, color .15s;
+  }
+  .cam-btn:hover { background: rgba(255,210,140,.12); color: #f5ecd8; }
+  #zp-timeline { margin-top: 6px; }
+  .tl-entry { display: flex; gap: 10px; align-items: baseline; padding: 6px 0;
+    border-bottom: 1px solid rgba(255,210,140,.07); }
+  .tl-entry-year { font-family: ui-monospace,Menlo,monospace; font-size: 9px;
+    color: rgba(255,210,140,.5); min-width: 34px; }
+  .tl-entry-label { font-size: 12px; color: #e8ddc8; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
@@ -60,6 +94,39 @@ const ZONES = [
   {id:12, name:"INTEGRATION", oil:"Frankincense",      hex:"#C8A96E", wavelength:"All",       principle:"Wholeness · Unity · The One",         tp:.05},
 ];
 ZONES.forEach((z, i) => { z.angle = (i / ZONES.length) * Math.PI * 2; });
+
+// TIMELINE DATA — oldest events at index 0 (farthest vine tip), newest at end (near trunk)
+// Format: { year, label, note }  — fill in real data here
+const TIMELINE = {
+  0:  [ // GROUNDING
+    { year:'2005', label:'Born in Wisconsin' },
+    { year:'2010', label:'First festival' },
+    { year:'2015', label:'Milwaukee roots deep' },
+    { year:'2020', label:'Kenosha warehouse' },
+    { year:'2024', label:'Road case deployed' },
+  ],
+  1:  [ // COURAGE
+    { year:'2012', label:'First solo tour' },
+    { year:'2015', label:'Pushed through the fear' },
+    { year:'2019', label:'New city, alone' },
+    { year:'2023', label:'FOE founded' },
+  ],
+  2:  [ // PASSION
+    { year:'2008', label:'Fell in love with lights' },
+    { year:'2013', label:'DrugWars inspiration' },
+    { year:'2018', label:'Gig Wars concept born' },
+    { year:'2024', label:'Gig Wars v0.1' },
+  ],
+  3:  [ { year:'—', label:'Creativity timeline coming' } ],
+  4:  [ { year:'—', label:'Clarity timeline coming' } ],
+  5:  [ { year:'—', label:'Growth timeline coming' } ],
+  6:  [ { year:'—', label:'Flow timeline coming' } ],
+  7:  [ { year:'—', label:'Expression timeline coming' } ],
+  8:  [ { year:'—', label:'Vision timeline coming' } ],
+  9:  [ { year:'—', label:'Intuition timeline coming' } ],
+  10: [ { year:'—', label:'Spirit timeline coming' } ],
+  11: [ { year:'—', label:'Integration timeline coming' } ],
+};
 </script>
 
 <div id="zone-panel">
@@ -78,15 +145,19 @@ ZONES.forEach((z, i) => { z.angle = (i / ZONES.length) * Math.PI * 2; });
       <div class="zone-label">Young Living Oil</div>
       <div class="zone-value" id="zp-oil"></div>
     </div>
+    <div class="zone-field" id="zp-timeline">
+      <div class="zone-label">Timeline · tip = oldest</div>
+      <div id="zp-timeline-entries"></div>
+    </div>
   </div>
 </div>
 
 <div style="position:fixed;inset:0;overflow:hidden;background:radial-gradient(120% 120% at 50% 42%,#0c0b14,#030305 70%);">
   <canvas id="main-canvas" style="width:100%;height:100%;"></canvas>
   <div style="position:absolute;top:26px;left:28px;animation:willFade 1.4s ease both;pointer-events:none;">
-    <div class="panel" style="font-size:11px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,214,140,.55);">WILL-OATS-TREE</div>
-    <div style="font-family:Georgia,'Times New Roman',serif;font-size:34px;font-weight:400;letter-spacing:.5px;color:#f5ecd8;margin-top:6px;text-shadow:0 2px 36px rgba(255,190,90,.4);">Weeping&nbsp;Willow</div>
-    <div class="panel" style="font-size:11px;letter-spacing:1px;color:rgba(235,220,190,.4);margin-top:8px;">drag to orbit · scroll to zoom · click a node</div>
+    <div class="panel" style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,214,140,.4);">FOOK'N OATS ENTERPRISES · v2.1 · 2026</div>
+    <div style="font-family:Georgia,'Times New Roman',serif;font-size:34px;font-weight:400;letter-spacing:.5px;color:#f5ecd8;margin-top:6px;text-shadow:0 2px 36px rgba(255,190,90,.4);">Will-Oats-Tree</div>
+    <div class="panel" style="font-size:10px;letter-spacing:.5px;color:rgba(235,220,190,.35);margin-top:5px;max-width:300px;line-height:1.5;">12-zone life encyclopedia · energy source code<br>drag · scroll · click a node</div>
   </div>
   <div class="panel" style="position:absolute;bottom:26px;left:28px;animation:willFade 1.8s ease both;
       display:flex;flex-direction:column;gap:13px;padding:18px 20px 20px;border-radius:16px;
@@ -105,6 +176,12 @@ ZONES.forEach((z, i) => { z.angle = (i / ZONES.length) * Math.PI * 2; });
     </div>
     <div style="display:flex;gap:10px;">
       <button id="btn-spectral" class="btn" style="flex:1;">Rainbow</button>
+    </div>
+    <div style="display:flex;gap:6px;">
+      <button class="cam-btn" onclick="setCam('front')">Front</button>
+      <button class="cam-btn" onclick="setCam('top')">Top</button>
+      <button class="cam-btn" onclick="setCam('iso')">Iso</button>
+      <button class="cam-btn" onclick="setCam('side')">Side</button>
     </div>
   </div>
   <div id="hov-tip" style="position:fixed;left:0;top:0;pointer-events:none;z-index:200;
@@ -351,10 +428,10 @@ ZONES.forEach((z, i) => { z.angle = (i / ZONES.length) * Math.PI * 2; });
   }
 
   // uniforms
-  var _spectral = true, _wind = 0.6, _mouseWind = 0;
-  var U  = { uTime:{value:0}, uWind:{value:_wind}, uWindDir:{value:new THREE.Vector2(0.85,0.32)}, uBright:{value:1.0}, uSpectral:{value:1} };
-  var LU = { uTime:{value:0}, uWind:{value:_wind}, uWindDir:{value:new THREE.Vector2(0.85,0.32)}, uSpectral:{value:1} };
-  var SU = { uTime:{value:0}, uWind:{value:_wind}, uWindDir:{value:new THREE.Vector2(0.85,0.32)}, uScale:{value:H}, uSpectral:{value:1} };
+  var _spectral = true, _wind = 0.6, _mouseWind = 0, _selectedZoneIdx = -1;
+  var U  = { uTime:{value:0}, uWind:{value:_wind}, uWindDir:{value:new THREE.Vector2(0.85,0.32)}, uBright:{value:1.0}, uSpectral:{value:1}, uSelHue:{value:-1.0}, uSelActive:{value:0} };
+  var LU = { uTime:{value:0}, uWind:{value:_wind}, uWindDir:{value:new THREE.Vector2(0.85,0.32)}, uSpectral:{value:1}, uSelHue:{value:-1.0}, uSelActive:{value:0} };
+  var SU = { uTime:{value:0}, uWind:{value:_wind}, uWindDir:{value:new THREE.Vector2(0.85,0.32)}, uScale:{value:H}, uSpectral:{value:1}, uSelHue:{value:-1.0}, uSelActive:{value:0} };
   var wms = [U, LU, SU];
 
   // leaf instances
@@ -409,7 +486,7 @@ ZONES.forEach((z, i) => { z.angle = (i / ZONES.length) * Math.PI * 2; });
     fragmentShader: [
       'precision highp float;',
       'varying vec2 vUv; varying float vTint; varying float vShade; varying float vH; varying float vShim; varying float vHue; varying float vOp;',
-      'uniform float uBright; uniform float uSpectral;',
+      'uniform float uBright; uniform float uSpectral; uniform float uSelHue; uniform float uSelActive;',
       HSV,
       'void main(){',
       '  vec2 c=vUv-0.5; float d=length(vec2(c.x*2.0,c.y*0.95)); if(d>0.5) discard;',
@@ -423,7 +500,11 @@ ZONES.forEach((z, i) => { z.angle = (i / ZONES.length) * Math.PI * 2; });
       '  float shim=vShim*vShim;',
       '  col+=mix(brightG,vec3(1.0),uSpectral)*shim*0.55*(0.4+vTint*0.6);',
       '  col*=uBright;',
-      '  float alpha=vOp*(0.55+0.45*shim);',
+      '  float hueDiff=abs(vHue-uSelHue); hueDiff=min(hueDiff,1.0-hueDiff);',
+      '  float isSelected=uSelActive*(1.0-step(0.05,hueDiff));',
+      '  float dimFactor=mix(0.3,1.0,max(isSelected,1.0-uSelActive));',
+      '  float alpha=vOp*(0.55+0.45*shim)*dimFactor;',
+      '  col*=dimFactor;',
       '  gl_FragColor=vec4(col,alpha);',
       '}'
     ].join('\n')
@@ -455,13 +536,16 @@ ZONES.forEach((z, i) => { z.angle = (i / ZONES.length) * Math.PI * 2; });
       '}'
     ].join('\n'),
     fragmentShader: [
-      'precision highp float; varying float vH; varying float vHue; uniform float uSpectral;',
+      'precision highp float; varying float vH; varying float vHue; uniform float uSpectral; uniform float uSelHue; uniform float uSelActive;',
       HSV,
       'void main(){',
       '  vec3 woody=mix(vec3(0.34,0.24,0.10),vec3(0.78,0.58,0.22),vH);',
       '  vec3 spec=hsv2rgb(vec3(vHue,0.8,mix(0.4,0.95,vH)));',
       '  vec3 col=mix(woody,spec,uSpectral);',
-      '  gl_FragColor=vec4(col,0.22+vH*0.14);',
+      '  float hueDiff=abs(vHue-uSelHue); hueDiff=min(hueDiff,1.0-hueDiff);',
+      '  float isSelected=uSelActive*(1.0-step(0.05,hueDiff));',
+      '  float dim=mix(0.3,1.0,max(isSelected,1.0-uSelActive));',
+      '  gl_FragColor=vec4(col*dim,(0.22+vH*0.14)*dim);',
       '}'
     ].join('\n')
   });
@@ -500,7 +584,7 @@ ZONES.forEach((z, i) => { z.angle = (i / ZONES.length) * Math.PI * 2; });
       '}'
     ].join('\n'),
     fragmentShader: [
-      'precision highp float; varying float vTw; varying float vHue; uniform float uSpectral;',
+      'precision highp float; varying float vTw; varying float vHue; uniform float uSpectral; uniform float uSelHue; uniform float uSelActive;',
       HSV,
       'void main(){',
       '  vec2 c=gl_PointCoord-0.5;',
@@ -515,7 +599,10 @@ ZONES.forEach((z, i) => { z.angle = (i / ZONES.length) * Math.PI * 2; });
       '  vec3 spec=hsv2rgb(vec3(vHue,0.85,1.0));',
       '  vec3 col=mix(warm,spec,uSpectral*0.35);',
       '  vec3 outc=(col*core*1.2+pale*core*0.25)*vTw;',
-      '  gl_FragColor=vec4(outc,(halo*0.2+core)*vTw);',
+      '  float hueDiff=abs(vHue-uSelHue); hueDiff=min(hueDiff,1.0-hueDiff);',
+      '  float isSelected=uSelActive*(1.0-step(0.05,hueDiff));',
+      '  float dim=mix(0.3,1.0,max(isSelected,1.0-uSelActive));',
+      '  gl_FragColor=vec4(outc*dim,(halo*0.2+core)*vTw*dim);',
       '}'
     ].join('\n')
   });
@@ -616,8 +703,83 @@ ZONES.forEach((z, i) => { z.angle = (i / ZONES.length) * Math.PI * 2; });
     if (_hoverIdx >= 0) openZonePanel(_hoverIdx);
   });
 
+  // store one representative world-space point per vine seg per zone for timeline labels
+  // zoneVinePoints[zoneIdx] = array of THREE.Vector3 from tip→root (oldest→newest)
+  var zoneVinePoints = [];
+  for (var zvi = 0; zvi < ZONES.length; zvi++) {
+    var zvAtt = attach[zvi];
+    var zvPts = [];
+    var segsForZone = 20;
+    for (var zvi2 = 0; zvi2 <= segsForZone; zvi2++) {
+      var zt = zvi2 / segsForZone;
+      var zout = Math.sin(zt * Math.PI * 0.5) * zvAtt.spread;
+      var zdown = Math.pow(zt, 1.45) * zvAtt.droop * zvAtt.lenJ;
+      zvPts.push(new THREE.Vector3(
+        zvAtt.x * 0.4 + Math.cos(zvAtt.a) * zout,
+        Math.max(0.12, zvAtt.y - zdown),
+        zvAtt.z * 0.4 + Math.sin(zvAtt.a) * zout
+      ));
+    }
+    // reverse so index 0 = tip (oldest), end = near trunk (newest)
+    zvPts.reverse();
+    zoneVinePoints.push(zvPts);
+  }
+
+  // timeline canvas labels
+  var _tlLabels = [];
+  function clearTlLabels() {
+    _tlLabels.forEach(function(el) { el.parentNode && el.parentNode.removeChild(el); });
+    _tlLabels = [];
+  }
+  function showTlLabels(zoneIdx) {
+    clearTlLabels();
+    var events = TIMELINE[zoneIdx];
+    if (!events || !events.length) return;
+    var pts = zoneVinePoints[zoneIdx];
+    var zone = ZONES[zoneIdx];
+    events.forEach(function(ev, i) {
+      var t = events.length > 1 ? i / (events.length - 1) : 0;
+      var ptIdx = Math.round(t * (pts.length - 1));
+      var worldPt = pts[ptIdx];
+      var el = document.createElement('div');
+      el.className = 'tl-label';
+      el.style.color = zone.hex;
+      el.innerHTML = '<div class="tl-dot" style="border-color:'+zone.hex+'"></div>' +
+        '<div class="tl-text"><span class="tl-year">'+ev.year+'</span> '+ev.label+'</div>';
+      document.body.appendChild(el);
+      el._world = worldPt.clone();
+      _tlLabels.push(el);
+      setTimeout(function() { el.classList.add('visible'); }, 80 + i * 60);
+    });
+  }
+  function projectTlLabels() {
+    var width = canvas.clientWidth || window.innerWidth;
+    var height = canvas.clientHeight || window.innerHeight;
+    _tlLabels.forEach(function(el) {
+      var v = el._world.clone().project(camera);
+      var x = (v.x * 0.5 + 0.5) * width;
+      var y = (-v.y * 0.5 + 0.5) * height;
+      el.style.left = x + 'px';
+      el.style.top  = y + 'px';
+      el.style.display = (v.z > 1) ? 'none' : 'flex'; // behind camera
+    });
+  }
+
+  function setSolo(zoneIdx) {
+    _selectedZoneIdx = zoneIdx;
+    var hsl = {};
+    new THREE.Color(ZONES[zoneIdx].hex).getHSL(hsl);
+    wms.forEach(function(m) { m.uSelHue.value = hsl.h; m.uSelActive.value = 1; });
+  }
+  function clearSolo() {
+    _selectedZoneIdx = -1;
+    wms.forEach(function(m) { m.uSelActive.value = 0; });
+    clearTlLabels();
+  }
+
   function openZonePanel(idx) {
-    var zone = ZONES[attach[idx].zoneIdx];
+    var zoneIdx = attach[idx].zoneIdx;
+    var zone = ZONES[zoneIdx];
     document.getElementById('zp-id').textContent = 'Zone ' + zone.id;
     document.getElementById('zp-name').textContent = zone.name;
     document.getElementById('zp-name').style.color = zone.hex;
@@ -626,10 +788,19 @@ ZONES.forEach((z, i) => { z.angle = (i / ZONES.length) * Math.PI * 2; });
     document.getElementById('zp-oil').textContent = zone.oil;
     document.getElementById('zone-panel-header').style.borderBottomColor = zone.hex + '44';
     document.getElementById('zone-panel-close').style.color = zone.hex;
+    // timeline entries in panel
+    var entries = TIMELINE[zoneIdx] || [];
+    var html = entries.slice().reverse().map(function(ev) {
+      return '<div class="tl-entry"><span class="tl-entry-year">'+ev.year+'</span><span class="tl-entry-label">'+ev.label+'</span></div>';
+    }).join('');
+    document.getElementById('zp-timeline-entries').innerHTML = html || '<div style="font-size:12px;color:rgba(255,210,140,.3);font-style:italic;">No events yet</div>';
     document.getElementById('zone-panel').classList.add('open');
+    setSolo(zoneIdx);
+    showTlLabels(zoneIdx);
   }
   document.getElementById('zone-panel-close').addEventListener('click', function() {
     document.getElementById('zone-panel').classList.remove('open');
+    clearSolo();
   });
 
   var tip = document.getElementById('hov-tip');
@@ -660,6 +831,15 @@ ZONES.forEach((z, i) => { z.angle = (i / ZONES.length) * Math.PI * 2; });
   document.getElementById('btn-spectral').addEventListener('click', function() {
     _spectral = !_spectral; wms.forEach(function(m){ m.uSpectral.value = _spectral ? 1 : 0; }); refreshBtns();
   });
+
+  // camera presets — exposed globally for onclick
+  window.setCam = function(preset) {
+    _autoRot = false; refreshBtns();
+    if (preset === 'front') { orb.tTheta = 0;         orb.tPhi = 1.32;  orb.tRadius = 16; }
+    if (preset === 'top')   { orb.tTheta = 0;         orb.tPhi = 0.04;  orb.tRadius = 20; }
+    if (preset === 'iso')   { orb.tTheta = Math.PI/4; orb.tPhi = 0.88;  orb.tRadius = 18; }
+    if (preset === 'side')  { orb.tTheta = Math.PI/2; orb.tPhi = 1.32;  orb.tRadius = 16; }
+  };
 
   window.addEventListener('resize', function() {
     var w = canvas.clientWidth||window.innerWidth, h = canvas.clientHeight||window.innerHeight;
@@ -752,6 +932,7 @@ ZONES.forEach((z, i) => { z.angle = (i / ZONES.length) * Math.PI * 2; });
     camera.lookAt(orb.target);
     haze.lookAt(camera.position.x, haze.position.y, camera.position.z);
     renderer.render(scene, camera);
+    if (_tlLabels.length) projectTlLabels();
   }
   tick();
 })();
