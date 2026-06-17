@@ -12,7 +12,7 @@
 <meta name="twitter:title" content="Will-Oats-Tree" />
 <meta name="twitter:description" content="12-zone life encyclopedia · energy source code · Fook'n Oats Enterprises" />
 <meta name="twitter:image" content="https://will-oats-tree.vercel.app/og.png" />
-<title>Will-Oats-Tree v3.0 · FOE</title>
+<title>Will-Oats-Tree v3.1 · FOE</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; width: 100%; overflow: hidden; background: #030305; }
@@ -91,23 +91,26 @@
     transition: background .15s, color .15s;
   }
   .cam-btn:hover { background: rgba(255,210,140,.12); color: #f5ecd8; }
-  /* timeline branch panel */
-  #tl-panel {
-    position: fixed; left: 0; top: 0; bottom: 0; width: 100%; max-width: 420px;
-    background: rgba(6,5,12,.96); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-    border-right: 1px solid rgba(255,210,140,.1);
-    transform: translateX(-100%); transition: transform .4s cubic-bezier(.22,1,.36,1);
+  /* zone floating window */
+  #zone-float {
+    position: fixed; top: 50%; right: 28px;
+    transform: translateY(-50%) scale(0.92); opacity: 0; pointer-events: none;
+    transition: opacity .3s ease, transform .3s cubic-bezier(.22,1,.36,1);
+    width: 320px; max-height: 80vh;
+    background: rgba(7,5,14,.94); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+    border: 1px solid rgba(255,210,140,.18); border-radius: 16px;
+    box-shadow: 0 24px 64px rgba(0,0,0,.75), 0 0 0 1px rgba(255,210,140,.06);
     z-index: 110; display: flex; flex-direction: column; overflow: hidden;
   }
-  #tl-panel.open { transform: translateX(0); }
-  #tl-header { padding: 28px 24px 16px; border-bottom: 1px solid rgba(255,210,140,.08); flex-shrink: 0; }
-  #tl-back {
-    position: absolute; top: 20px; right: 20px; background: none; border: none;
-    color: rgba(255,210,140,.45); font-size: 13px; letter-spacing: 1px; cursor: pointer;
-    font-family: ui-monospace,Menlo,monospace; text-transform: uppercase; transition: color .15s;
+  #zone-float.open { opacity: 1; transform: translateY(-50%) scale(1); pointer-events: auto; }
+  #zf-header { padding: 22px 22px 14px; border-bottom: 1px solid rgba(255,210,140,.08); flex-shrink: 0; position: relative; }
+  #zf-close {
+    position: absolute; top: 16px; right: 16px; background: none; border: none;
+    color: rgba(255,210,140,.4); font-size: 20px; cursor: pointer; line-height: 1;
+    transition: color .15s; padding: 4px; border-radius: 50%;
   }
-  #tl-back:hover { color: #ffeec0; }
-  #tl-body { flex: 1; overflow-y: auto; padding: 16px 24px 40px; }
+  #zf-close:hover { color: #ffeec0; }
+  #zf-body { flex: 1; overflow-y: auto; padding: 14px 22px 28px; }
   /* vertical timeline branch */
   .tl-branch {
     position: relative; padding-left: 28px;
@@ -207,7 +210,7 @@ const TIMELINE = {
 <div style="position:fixed;inset:0;overflow:hidden;background:radial-gradient(120% 120% at 50% 42%,#0c0b14,#030305 70%);">
   <canvas id="main-canvas" style="width:100%;height:100%;"></canvas>
   <div style="position:absolute;top:26px;left:28px;animation:willFade 1.4s ease both;pointer-events:none;">
-    <div class="panel" style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,214,140,.4);">FOOK'N OATS ENTERPRISES · v3.0 · 2026.06.16</div>
+    <div class="panel" style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,214,140,.4);">FOOK'N OATS ENTERPRISES · v3.1 · 2026.06.16</div>
     <div style="font-family:Georgia,'Times New Roman',serif;font-size:34px;font-weight:400;letter-spacing:.5px;color:#f5ecd8;margin-top:6px;text-shadow:0 2px 36px rgba(255,190,90,.4);">Will-Oats-Tree</div>
     <div class="panel" style="font-size:10px;letter-spacing:.5px;color:rgba(235,220,190,.35);margin-top:5px;max-width:300px;line-height:1.5;">12-zone life encyclopedia · energy source code<br>drag · scroll · shift+scroll to crane up/down · click a node</div>
   </div>
@@ -244,16 +247,17 @@ const TIMELINE = {
       <button class="cam-btn" onclick="setCam('bottom')">Btm</button>
     </div>
   </div>
-  <!-- timeline branch panel -->
-  <div id="tl-panel">
-    <div id="tl-header">
-      <button id="tl-back">← back</button>
-      <div id="tl-zone-meta" style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,210,140,.4);margin-bottom:6px;"></div>
-      <div id="tl-zone-name" style="font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:400;color:#f5ecd8;"></div>
-      <div id="tl-zone-principle" style="font-size:11px;color:rgba(235,220,190,.4);margin-top:4px;"></div>
+  <!-- zone floating window -->
+  <div id="zone-float">
+    <div id="zf-header">
+      <button id="zf-close">✕</button>
+      <div id="zf-zone-meta" style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,210,140,.4);margin-bottom:6px;"></div>
+      <div id="zf-zone-name" style="font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:400;color:#f5ecd8;"></div>
+      <div id="zf-zone-oil" style="font-size:11px;color:rgba(235,220,190,.5);margin-top:3px;"></div>
+      <div id="zf-zone-principle" style="font-size:11px;color:rgba(235,220,190,.35);margin-top:2px;"></div>
     </div>
-    <div id="tl-body">
-      <div class="tl-tip-marker" id="tl-tip-label">tip · oldest</div>
+    <div id="zf-body">
+      <div class="tl-tip-marker" id="tl-tip-label">timeline · oldest first</div>
       <div class="tl-branch" id="tl-branch-nodes"></div>
     </div>
   </div>
@@ -991,7 +995,7 @@ const TIMELINE = {
     clearTlLabels();
   }
 
-  // click a node → zoom to branch + open timeline panel (no right panel)
+  // click a node → zoom to face branch + open floating window
   function openZonePanel(idx) {
     var zoneIdx = attach[idx].zoneIdx;
     hideHovCard();
@@ -1082,20 +1086,21 @@ const TIMELINE = {
     if (preset === 'bottom') { orb.tTheta = 0;         orb.tPhi = Math.PI - 0.08; orb.tRadius = 18; _tTargetY = 0.5; }
   };
 
-  // timeline branch panel
-  var tlPanel  = document.getElementById('tl-panel');
-  var tlBack   = document.getElementById('tl-back');
-  tlBack.addEventListener('click', function() { closeTlPanel(); });
+  // zone floating window
+  var zoneFloat = document.getElementById('zone-float');
+  document.getElementById('zf-close').addEventListener('click', function() { closeZoneFloat(); });
 
-  function openTlPanel(zoneIdx) {
+  function openZoneFloat(zoneIdx) {
     var zone = ZONES[zoneIdx];
-    document.getElementById('tl-zone-meta').textContent = 'Zone ' + zone.id + ' · ' + zone.wavelength;
-    document.getElementById('tl-zone-name').textContent = zone.name;
-    document.getElementById('tl-zone-name').style.color = zone.hex;
-    document.getElementById('tl-zone-principle').textContent = zone.principle;
+    document.getElementById('zf-zone-meta').textContent = 'Zone ' + zone.id + ' · ' + zone.wavelength;
+    document.getElementById('zf-zone-name').textContent = zone.name;
+    document.getElementById('zf-zone-name').style.color = zone.hex;
+    document.getElementById('zf-zone-oil').textContent = zone.oil;
+    document.getElementById('zf-zone-principle').textContent = zone.principle;
     document.getElementById('tl-tip-label').style.color = zone.hex + '66';
-    // entries: oldest at tip (index 0) → newest at trunk (end); display oldest first (top)
-    var entries = (TIMELINE[zoneIdx] || []).slice(); // already oldest→newest in data
+    zoneFloat.style.borderColor = zone.hex + '44';
+    zoneFloat.style.boxShadow = '0 24px 64px rgba(0,0,0,.75), 0 0 0 1px ' + zone.hex + '18, 0 0 40px ' + zone.hex + '18';
+    var entries = (TIMELINE[zoneIdx] || []).slice();
     var nodesEl = document.getElementById('tl-branch-nodes');
     if (!entries.length) {
       nodesEl.innerHTML = '<div style="font-size:13px;color:rgba(255,210,140,.3);font-style:italic;padding:8px 0;">No events yet</div>';
@@ -1108,49 +1113,38 @@ const TIMELINE = {
           + '</div>';
       }).join('');
     }
-    tlPanel.classList.add('open');
+    zoneFloat.classList.add('open');
   }
 
-  function closeTlPanel() {
-    tlPanel.classList.remove('open');
-    // restore camera to pre-zoom state
+  function closeZoneFloat() {
+    zoneFloat.classList.remove('open');
+    // restore camera zoom
     if (_zoomRestoreOrb) {
       orb.tTheta  = _zoomRestoreOrb.theta;
       orb.tPhi    = _zoomRestoreOrb.phi;
       orb.tRadius = _zoomRestoreOrb.radius;
-      orb.target.copy(_zoomRestoreOrb.target);
       _zoomRestoreOrb = null;
     }
     clearSolo();
-    // zone-panel removed; nothing to close on right side
   }
 
-  // zoom to branch
+  // zoom to face the branch — NO orbit-center lock, just angle + radius
   var _zoomRestoreOrb = null;
   function zoomToBranch(zoneIdx) {
     var zone = ZONES[zoneIdx];
-    // save current camera state for restore on back
+    // save only angle + radius for restore; target stays wherever user had it
     _zoomRestoreOrb = {
       theta:  orb.theta,
       phi:    orb.phi,
-      radius: orb.radius,
-      target: orb.target.clone()
+      radius: orb.radius
     };
-    _autoRot = false; refreshBtns();
-    // bough runs at zone.angle around Y axis, outward from trunk
-    // aim camera from the opposite side of the bough angle, slightly elevated
-    var bAngle = zone.angle; // radians around Y
-    orb.tTheta  = bAngle + Math.PI; // look from the other side toward the bough
-    orb.tPhi    = 1.05;  // slightly above horizontal
-    orb.tRadius = 10;    // zoom in close
-    // target: center of that bough's region (roughly halfway up the tree, outward)
-    orb.target.set(
-      Math.sin(bAngle) * 3,
-      6.5,
-      Math.cos(bAngle) * 3
-    );
-    // open the panel after a short delay (camera is lerping)
-    setTimeout(function() { openTlPanel(zoneIdx); }, 500);
+    // aim camera from opposite side so the branch fills the view
+    var bAngle = zone.angle;
+    orb.tTheta  = bAngle + Math.PI; // face the bough head-on
+    orb.tPhi    = 1.08;             // slightly above horizontal — shows branch top-to-bottom
+    orb.tRadius = 11;               // close enough to fill branch, wide enough to see vines
+    // DO NOT change orb.target — let the user keep their orbit pivot
+    setTimeout(function() { openZoneFloat(zoneIdx); }, 400);
   }
 
   window.addEventListener('resize', function() {
