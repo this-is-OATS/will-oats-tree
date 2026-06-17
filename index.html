@@ -12,7 +12,7 @@
 <meta name="twitter:title" content="Will-Oats-Tree" />
 <meta name="twitter:description" content="12-zone life encyclopedia · energy source code · Fook'n Oats Enterprises" />
 <meta name="twitter:image" content="https://will-oats-tree.vercel.app/og.png" />
-<title>Will-Oats-Tree v2.1 · FOE</title>
+<title>Will-Oats-Tree v3.0 · FOE</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; width: 100%; overflow: hidden; background: #030305; }
@@ -207,7 +207,7 @@ const TIMELINE = {
 <div style="position:fixed;inset:0;overflow:hidden;background:radial-gradient(120% 120% at 50% 42%,#0c0b14,#030305 70%);">
   <canvas id="main-canvas" style="width:100%;height:100%;"></canvas>
   <div style="position:absolute;top:26px;left:28px;animation:willFade 1.4s ease both;pointer-events:none;">
-    <div class="panel" style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,214,140,.4);">FOOK'N OATS ENTERPRISES · v2.9 · 2026</div>
+    <div class="panel" style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,214,140,.4);">FOOK'N OATS ENTERPRISES · v3.0 · 2026.06.16</div>
     <div style="font-family:Georgia,'Times New Roman',serif;font-size:34px;font-weight:400;letter-spacing:.5px;color:#f5ecd8;margin-top:6px;text-shadow:0 2px 36px rgba(255,190,90,.4);">Will-Oats-Tree</div>
     <div class="panel" style="font-size:10px;letter-spacing:.5px;color:rgba(235,220,190,.35);margin-top:5px;max-width:300px;line-height:1.5;">12-zone life encyclopedia · energy source code<br>drag · scroll · shift+scroll to crane up/down · click a node</div>
   </div>
@@ -435,21 +435,37 @@ const TIMELINE = {
   );
   groundGlow.rotation.x = -Math.PI/2; groundGlow.position.y = 0.04; scene.add(groundGlow);
 
-  // trunk
+  // trunk — tapered using stacked TubeGeometry segments decreasing in radius
   var bark = makeBarkTex();
   var trunkMat = new THREE.MeshBasicMaterial({ map: bark });
   var trunkGrp = new THREE.Group();
   var trunkH = 5.2;
   var tp2 = [];
-  for (var i = 0; i <= 12; i++) {
-    var tt = i/12, yy = tt*trunkH;
+  for (var i = 0; i <= 16; i++) {
+    var tt = i/16, yy = tt*trunkH;
     var sw = Math.sin(tt*Math.PI*1.7);
     tp2.push(new THREE.Vector3(sw*0.5*(1-tt*0.25)+Math.sin(tt*6)*0.05, yy, Math.cos(tt*Math.PI*1.25)*0.32*(1-tt*0.1)));
   }
   var trunkCurve = new THREE.CatmullRomCurve3(tp2);
-  trunkGrp.add(new THREE.Mesh(new THREE.TubeGeometry(trunkCurve,90,0.34,16,false), trunkMat));
-  var baseCone = new THREE.Mesh(new THREE.CylinderGeometry(0.36,0.92,1.5,16), trunkMat);
-  baseCone.position.y = 0.55; trunkGrp.add(baseCone);
+  // Build tapered trunk: 4 stacked segments, each narrower
+  var trunkSegs = 4;
+  for (var ts = 0; ts < trunkSegs; ts++) {
+    var t0 = ts/trunkSegs, t1 = (ts+1)/trunkSegs;
+    var r0 = 0.48 * Math.pow(1-t0, 0.55);
+    var r1 = 0.48 * Math.pow(1-t1, 0.55);
+    var segPts = [];
+    for (var tp = 0; tp <= 8; tp++) {
+      var ttt = t0 + (t1-t0)*(tp/8);
+      segPts.push(trunkCurve.getPoint(ttt));
+    }
+    var segCurve = new THREE.CatmullRomCurve3(segPts);
+    var segRadius = (r0 + r1) / 2;
+    trunkGrp.add(new THREE.Mesh(new THREE.TubeGeometry(segCurve, 12, segRadius, 14, false), trunkMat));
+  }
+  // wider flared base cone
+  var baseCone = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 1.1, 1.8, 16), trunkMat);
+  baseCone.position.y = 0.6; trunkGrp.add(baseCone);
+  // roots
   for (var i = 0; i < 9; i++) {
     var ra = (i/9)*Math.PI*2 + Math.random()*0.4;
     var rr = 1.7 + Math.random()*1.4;
@@ -459,30 +475,41 @@ const TIMELINE = {
       new THREE.Vector3(Math.cos(ra)*rr*0.7, 0.08, Math.sin(ra)*rr*0.7),
       new THREE.Vector3(Math.cos(ra)*rr, 0.03, Math.sin(ra)*rr),
     ];
-    trunkGrp.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(rpts),28,0.13,8,false), trunkMat));
+    var rootRadius = 0.09 + Math.random()*0.06;
+    trunkGrp.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(rpts),28,rootRadius,8,false), trunkMat));
   }
 
-  // ZONE boughs (12, one per zone)
+  // ZONE boughs — tapered, natural arc upward then out, thinning to vine tips
   var attach = [];
   for (var zi = 0; zi < ZONES.length; zi++) {
     var zone = ZONES[zi];
     var ba = zone.angle + (Math.random()-0.5)*0.15;
-    var blen = 1.7 + Math.random()*1.3;
-    var btilt = 0.42 + Math.random()*0.26;
+    var blen = 1.9 + Math.random()*1.4;
     var bdx = Math.cos(ba), bdz = Math.sin(ba);
-    var bstartY = trunkH - 0.6 - Math.random()*0.8;
+    var bstartY = trunkH - 0.5 - Math.random()*0.7;
+    // 4-point curve: emerges upward from trunk, arcs out, then droops toward vine hang point
     var bp = [
-      new THREE.Vector3(bdx*0.15, bstartY, bdz*0.15),
-      new THREE.Vector3(bdx*blen*0.55, bstartY+blen*0.5*Math.cos(btilt), bdz*blen*0.55),
-      new THREE.Vector3(bdx*blen*1.05, bstartY+blen*0.92*Math.cos(btilt), bdz*blen*1.05),
+      new THREE.Vector3(bdx*0.1,  bstartY,            bdz*0.1),
+      new THREE.Vector3(bdx*0.5,  bstartY+blen*0.45,  bdz*0.5),
+      new THREE.Vector3(bdx*blen*0.8, bstartY+blen*0.6, bdz*blen*0.8),
+      new THREE.Vector3(bdx*blen*1.1, bstartY+blen*0.38, bdz*blen*1.1),
     ];
     var zc = new THREE.Color(zone.hex);
     var bmat = new THREE.MeshBasicMaterial({ map: bark, color: new THREE.Color().lerpColors(new THREE.Color(0x887766), zc, 0.45) });
-    trunkGrp.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(bp),18,0.12,8,false), bmat));
-    var tipv = bp[2];
+    var bCurve = new THREE.CatmullRomCurve3(bp);
+    // tapered bough: 3 segments, radius 0.14 → 0.05
+    var bSegs = 3;
+    for (var bs = 0; bs < bSegs; bs++) {
+      var bt0 = bs/bSegs, bt1 = (bs+1)/bSegs;
+      var br = 0.14 * (1 - bs/bSegs * 0.72);
+      var bsPts = [];
+      for (var bp2 = 0; bp2 <= 6; bp2++) { bsPts.push(bCurve.getPoint(bt0 + (bt1-bt0)*(bp2/6))); }
+      trunkGrp.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(bsPts), 8, br, 8, false), bmat));
+    }
+    var tipv = bCurve.getPoint(1.0);
     var hsl = {}; zc.getHSL(hsl);
     attach.push({ x:tipv.x, y:tipv.y, z:tipv.z, a:ba, hue:hsl.h, zoneIdx:zi,
-      spread:1.0+Math.random()*1.0, droop:3.6+Math.random()*2.6, lenJ:0.85+Math.random()*0.5 });
+      spread:1.1+Math.random()*1.1, droop:3.6+Math.random()*2.6, lenJ:0.85+Math.random()*0.5 });
   }
   scene.add(trunkGrp);
 
@@ -539,6 +566,44 @@ const TIMELINE = {
       }
     }
   }
+
+  // === GOLDEN INACTIVE LEAVES — fill vines with dormant gold foliage ===
+  var GOLD_STRANDS = 200;
+  var GOLD_HUE = 0.10; // golden-amber (~C8A96E)
+  for (var s = 0; s < GOLD_STRANDS; s++) {
+    var base = attach[s % attach.length];
+    var sang = base.a + (Math.random()-0.5)*1.1;
+    var rIn = 0.3 + Math.random()*1.2;
+    var ssx = base.x*0.4 + Math.cos(sang)*rIn;
+    var ssz = base.z*0.4 + Math.sin(sang)*rIn;
+    var ssy = base.y - 0.1 + (Math.random()-0.5)*0.6;
+    var sodx = Math.cos(sang), sodz = Math.sin(sang);
+    var sspread = base.spread*(0.7+Math.random()*0.9);
+    var sdroop = base.droop*base.lenJ*(0.8+Math.random()*0.5);
+    var segs = 14 + Math.floor(Math.random()*8);
+    var sphase = Math.random()*Math.PI*2;
+    var wobF = 3+Math.random()*4, wobA = 0.06+Math.random()*0.10;
+    for (var si = 1; si <= segs; si++) {
+      var st = si/segs;
+      var out  = Math.sin(st*Math.PI*0.5)*sspread;
+      var down = Math.pow(st,1.45)*sdroop;
+      var wob  = Math.sin(st*wobF+sphase)*wobA;
+      var px = ssx + sodx*out + sodz*wob;
+      var pz = ssz + sodz*out - sodx*wob;
+      var py = Math.max(0.12, ssy - down);
+      var leafN = si < segs-2 ? 2 : 3;
+      for (var k = 0; k < leafN; k++) {
+        offsets.push(px+(Math.random()-0.5)*0.18, py+(Math.random()-0.5)*0.22, pz+(Math.random()-0.5)*0.18);
+        scales.push(0.10+Math.random()*0.14);
+        rots.push(Math.random()*Math.PI*2);
+        tilts_arr.push((Math.random()-0.5)*0.6);
+        heights.push(st); phases.push(sphase+Math.random()*0.5); tints.push(0.0);
+        hues_arr.push(GOLD_HUE + (Math.random()-0.5)*0.03);
+        opacities.push(0.35 + Math.random()*0.20); // 0.35–0.55 half-opacity
+      }
+    }
+  }
+  // =====================================================================
 
   // uniforms
   var _spectral = true, _wind = 0.6, _mouseWind = 0, _selectedZoneIdx = -1;
