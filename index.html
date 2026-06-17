@@ -12,7 +12,7 @@
 <meta name="twitter:title" content="Will-Oats-Tree" />
 <meta name="twitter:description" content="12-zone life encyclopedia · energy source code · Fook'n Oats Enterprises" />
 <meta name="twitter:image" content="https://will-oats-tree.vercel.app/og.png" />
-<title>Will-Oats-Tree v3.1 · FOE</title>
+<title>Will-Oats-Tree v3.2 · FOE</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; width: 100%; overflow: hidden; background: #030305; }
@@ -210,7 +210,7 @@ const TIMELINE = {
 <div style="position:fixed;inset:0;overflow:hidden;background:radial-gradient(120% 120% at 50% 42%,#0c0b14,#030305 70%);">
   <canvas id="main-canvas" style="width:100%;height:100%;"></canvas>
   <div style="position:absolute;top:26px;left:28px;animation:willFade 1.4s ease both;pointer-events:none;">
-    <div class="panel" style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,214,140,.4);">FOOK'N OATS ENTERPRISES · v3.1 · 2026.06.16</div>
+    <div class="panel" style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,214,140,.4);">FOOK'N OATS ENTERPRISES · v3.2 · 2026.06.16</div>
     <div style="font-family:Georgia,'Times New Roman',serif;font-size:34px;font-weight:400;letter-spacing:.5px;color:#f5ecd8;margin-top:6px;text-shadow:0 2px 36px rgba(255,190,90,.4);">Will-Oats-Tree</div>
     <div class="panel" style="font-size:10px;letter-spacing:.5px;color:rgba(235,220,190,.35);margin-top:5px;max-width:300px;line-height:1.5;">12-zone life encyclopedia · energy source code<br>drag · scroll · shift+scroll to crane up/down · click a node</div>
   </div>
@@ -995,13 +995,13 @@ const TIMELINE = {
     clearTlLabels();
   }
 
-  // click a node → zoom to face branch + open floating window
+  // click a node → dim others + open floating window (no camera movement)
   function openZonePanel(idx) {
     var zoneIdx = attach[idx].zoneIdx;
     hideHovCard();
     setSolo(zoneIdx);
     showTlLabels(zoneIdx);
-    zoomToBranch(zoneIdx);
+    setTimeout(function() { openZoneFloat(zoneIdx); }, 0);
   }
 
   // hover card
@@ -1118,33 +1118,7 @@ const TIMELINE = {
 
   function closeZoneFloat() {
     zoneFloat.classList.remove('open');
-    // restore camera zoom
-    if (_zoomRestoreOrb) {
-      orb.tTheta  = _zoomRestoreOrb.theta;
-      orb.tPhi    = _zoomRestoreOrb.phi;
-      orb.tRadius = _zoomRestoreOrb.radius;
-      _zoomRestoreOrb = null;
-    }
     clearSolo();
-  }
-
-  // zoom to face the branch — NO orbit-center lock, just angle + radius
-  var _zoomRestoreOrb = null;
-  function zoomToBranch(zoneIdx) {
-    var zone = ZONES[zoneIdx];
-    // save only angle + radius for restore; target stays wherever user had it
-    _zoomRestoreOrb = {
-      theta:  orb.theta,
-      phi:    orb.phi,
-      radius: orb.radius
-    };
-    // aim camera from opposite side so the branch fills the view
-    var bAngle = zone.angle;
-    orb.tTheta  = bAngle + Math.PI; // face the bough head-on
-    orb.tPhi    = 1.08;             // slightly above horizontal — shows branch top-to-bottom
-    orb.tRadius = 11;               // close enough to fill branch, wide enough to see vines
-    // DO NOT change orb.target — let the user keep their orbit pivot
-    setTimeout(function() { openZoneFloat(zoneIdx); }, 400);
   }
 
   window.addEventListener('resize', function() {
@@ -1222,7 +1196,12 @@ const TIMELINE = {
     }
 
     // orbit
-    if (_autoRot && !_dragging) orb.tTheta += _spinSpeed;
+    if (_autoRot && !_dragging) {
+      orb.tTheta += _spinSpeed;
+    } else if (!_dragging) {
+      // keep tTheta in sync so re-enabling spin doesn't snap/jump
+      orb.tTheta = orb.theta;
+    }
     orb.theta  += (orb.tTheta  - orb.theta)  * 0.1;
     orb.phi    += (orb.tPhi    - orb.phi)    * 0.1;
     orb.radius += (orb.tRadius - orb.radius) * 0.1;
