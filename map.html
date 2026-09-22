@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Will-Oats Tree · MAP · FOE</title>
+<meta name="description" content="Mind map of every online connect point in the Will-Oats Universe — 12 branches, one tree." />
+<meta name="theme-color" content="#030305" />
+<meta property="og:title" content="Will-Oats Tree · MAP" />
+<meta property="og:description" content="Every online connect point in the Will-Oats Universe, on one tree." />
+<meta property="og:image" content="https://will-oats-tree.vercel.app/og.png" />
+<style>
+:root{
+  --bg:#030305; --panel:#0b0b12; --line:rgba(255,238,192,.12); --line2:rgba(255,238,192,.28);
+  --ink:#ffeec0; --ink2:#9a9480; --gold:#d8a23a; --gold2:#ffe9a8;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--mono);font-size:13px;line-height:1.45;min-height:100%}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:14px 16px calc(env(safe-area-inset-bottom,0px) + 24px)}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;border-bottom:1px solid var(--line);padding-bottom:10px}
+header h1{margin:0;font-size:15px;letter-spacing:.18em;text-transform:uppercase;font-weight:600}
+header h1 b{background:linear-gradient(90deg,var(--gold),var(--gold2));-webkit-background-clip:text;background-clip:text;color:transparent}
+header .meta{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+header .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.pill{border:1px solid var(--line2);padding:4px 9px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;background:transparent;cursor:pointer}
+.pill:hover{border-color:var(--gold);color:var(--gold2)}
+main{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:14px;margin-top:14px}
+#stage{position:relative;border:1px solid var(--line);background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(216,162,58,.07),transparent 70%),var(--panel);min-height:320px}
+#svg{width:100%;height:auto;display:block;user-select:none;-webkit-user-select:none}
+.branch{cursor:pointer}
+.branch .lbl{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;fill:var(--ink);paint-order:stroke;stroke:#030305;stroke-width:4px;stroke-linejoin:round}
+.branch .cnt{font-family:var(--mono);font-size:11px;fill:#030305;font-weight:700}
+.branch.empty .lbl{fill:var(--ink2)}
+.branch.empty .limb{stroke-dasharray:6 6}
+.branch.on .lbl{fill:var(--gold2)}
+.branch:hover .node,.branch.on .node{filter:drop-shadow(0 0 8px currentColor)}
+.leafdot{pointer-events:none}
+.trunk{cursor:pointer}
+.trunk text{font-family:var(--mono);fill:var(--ink);text-anchor:middle;letter-spacing:.14em;text-transform:uppercase}
+#hud{position:absolute;left:8px;bottom:8px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);pointer-events:none}
+aside{border:1px solid var(--line);background:var(--panel);min-height:320px;display:flex;flex-direction:column}
+.ph{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:10px}
+.ph h2{margin:0;font-size:13px;letter-spacing:.16em;text-transform:uppercase;font-weight:600}
+.ph .n{margin-left:auto;font-size:10px;color:var(--ink2);letter-spacing:.12em}
+.ph i{display:inline-block;width:10px;height:10px;background:currentColor;flex:none;transform:translateY(1px)}
+.pb{padding:10px 14px 14px;display:flex;flex-direction:column;gap:8px;overflow:auto}
+.leaf{display:flex;align-items:center;gap:10px;text-decoration:none;border:1px solid var(--line2);padding:10px 12px;background:transparent;transition:border-color .12s,background .12s;text-align:left;width:100%}
+.leaf:hover{border-color:var(--gold);background:rgba(216,162,58,.06)}
+.leaf .t{display:flex;flex-direction:column;min-width:0;gap:1px}
+.leaf .nm{font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--gold2)}
+.leaf .sb{font-size:11px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.leaf .st{margin-left:auto;flex:none;width:7px;height:7px;border-radius:50%;background:#3a3a44;box-shadow:0 0 0 2px #030305}
+.leaf .st.up{background:#66FF00;box-shadow:0 0 6px #66FF00}
+.leaf .st.down{background:#FF2222;box-shadow:0 0 6px #FF2222}
+.leaf .st.chk{animation:blink 1.2s ease-in-out infinite}
+@keyframes blink{50%{opacity:.25}}
+.tag{font-size:9px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--line2);padding:1px 5px;color:var(--ink2);flex:none}
+.empty{color:var(--ink2);font-size:12px;padding:6px 0}
+.principle{font-size:11px;color:var(--ink2);letter-spacing:.06em;margin:0 0 4px}
+.ip{margin-top:14px;border:1px solid var(--gold);padding:10px 12px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold2);line-height:1.6}
+.ip small{display:block;color:var(--ink2);letter-spacing:.1em;font-size:10px;margin-top:4px;text-transform:none}
+footer{margin-top:16px;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-wrap:wrap;gap:8px 16px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+footer a{text-decoration:none}
+footer a:hover{color:var(--gold2)}
+@media (max-width:860px){
+  main{grid-template-columns:minmax(0,1fr)}
+  .branch .lbl{font-size:26px;letter-spacing:.04em}
+  .branch .cnt{font-size:16px}
+  .trunk text{font-size:20px}
+  aside{min-height:0}
+}
+@media (prefers-reduced-motion:reduce){.leaf .st.chk{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><b>WILL-OATS TREE</b> · MAP</h1>
+    <span class="meta">12 branches · every online connect point · <span id="ver"></span></span>
+    <div class="right">
+      <a class="pill" href="/">3D TREE</a>
+      <button class="pill" id="checkbtn" title="Ping every leaf">CHECK LIVE</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="stage">
+      <svg id="svg" viewBox="-170 -20 1340 1040" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Will-Oats Tree map: trunk with twelve branches">
+        <defs>
+          <radialGradient id="tg" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#d8a23a"/></radialGradient>
+        </defs>
+        <g id="limbs"></g>
+        <g id="branches"></g>
+        <g id="trunk" class="trunk" tabindex="0" role="button" aria-label="Trunk: Will-Oats Tree">
+          <circle cx="500" cy="500" r="78" fill="#030305" stroke="url(#tg)" stroke-width="3"/>
+          <circle cx="500" cy="500" r="66" fill="none" stroke="rgba(255,238,192,.18)" stroke-width="1"/>
+          <text x="500" y="494" font-size="15" font-weight="700">WILL-OATS</text>
+          <text x="500" y="514" font-size="15" font-weight="700">TREE</text>
+        </g>
+      </svg>
+      <div id="hud">tap a branch · tap the trunk for roots</div>
+    </div>
+
+    <aside aria-live="polite">
+      <div class="ph"><i id="pcol" style="color:var(--gold)"></i><h2 id="ptitle">TRUNK</h2><span class="n" id="pcount"></span></div>
+      <div class="pb" id="pbody"></div>
+    </aside>
+  </main>
+
+  <footer>
+    <span>WILL-OATS UNIVERSE · FOOK'N OATS ENTERPRISES</span>
+    <a href="/">← 3D TREE</a>
+    <span id="fver"></span>
+  </footer>
+</div>
+
+<script src="/tree-data.js"></script>
+<script>
+(function(){
+  'use strict';
+  const $=s=>document.querySelector(s);
+  const NS="http://www.w3.org/2000/svg";
+  const el=(n,a={},t)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);if(t!=null)e.textContent=t;return e;};
+  $("#ver").textContent=MAP_VERSION; $("#fver").textContent="MAP "+MAP_VERSION;
+
+  const CX=500,CY=500,R=330,N=BRANCHES.length;
+  const status=new Map(); // url -> 'up'|'down'|'chk'
+  let sel=null; // branch id or null (trunk)
+
+  // ---- draw
+  const limbs=$("#limbs"), gb=$("#branches");
+  BRANCHES.forEach((b,i)=>{
+    const a=(-Math.PI/2)+(i/N)*Math.PI*2;
+    const x=CX+Math.cos(a)*R, y=CY+Math.sin(a)*R;
+    b._x=x;b._y=y;b._a=a;
+    // limb: slight curve from trunk edge to node
+    const sx=CX+Math.cos(a)*80, sy=CY+Math.sin(a)*80;
+    const mx=(sx+x)/2+Math.cos(a+Math.PI/2)*22, my=(sy+y)/2+Math.sin(a+Math.PI/2)*22;
+    const limb=el("path",{d:`M${sx},${sy} Q${mx},${my} ${x},${y}`,fill:"none",stroke:b.hex,"stroke-width":b.leaves.length?3:1.5,"stroke-opacity":b.leaves.length?.75:.35,class:"limb"});
+    limbs.appendChild(limb); b._limb=limb;
+
+    const g=el("g",{class:"branch"+(b.leaves.length?"":" empty"),tabindex:"0",role:"button","aria-label":b.name+" · "+b.leaves.length+" links"});
+    g.style.color=b.hex;
+    g.appendChild(el("circle",{cx:x,cy:y,r:26,fill:b.hex,class:"node","fill-opacity":b.leaves.length?1:.35}));
+    g.appendChild(el("text",{x:x,y:y+4,"text-anchor":"middle",class:"cnt"},String(b.leaves.length)));
+    // leaf dots ring around node
+    b.leaves.forEach((lf,j)=>{
+      const la=a+(j-(b.leaves.length-1)/2)*0.22;
+      const lx=x+Math.cos(la)*46, ly=y+Math.sin(la)*46;
+      lf._dot=el("circle",{cx:lx,cy:ly,r:5,fill:b.hex,"fill-opacity":.8,class:"leafdot"});
+      g.appendChild(lf._dot);
+    });
+    // label outside the node
+    const lx=x+Math.cos(a)*(b.leaves.length?74:44), ly=y+Math.sin(a)*(b.leaves.length?74:44);
+    const anchor=Math.abs(Math.cos(a))<.25?"middle":(Math.cos(a)>0?"start":"end");
+    const words=b.name.split(" · ");
+    const t=el("text",{x:lx,y:ly+(words.length>1?-3:5),"text-anchor":anchor,class:"lbl"});
+    words.forEach((w,k)=>{t.appendChild(el("tspan",{x:lx,dy:k?"1.15em":0},w));});
+    g.appendChild(t);
+    g.addEventListener("click",()=>select(b.id));
+    g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();select(b.id);}});
+    gb.appendChild(g); b._g=g;
+  });
+  $("#trunk").addEventListener("click",()=>select(null));
+  $("#trunk").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();select(null);}});
+
+  // ---- panel
+  function leafBtn(lf,hex){
+    const a=document.createElement("a");
+    a.className="leaf"; a.href=lf.url;
+    if(lf.ext||!lf.back){a.target="_blank";a.rel="noopener";}
+    const t=document.createElement("span");t.className="t";
+    const nm=document.createElement("span");nm.className="nm";nm.textContent=lf.name;
+    const sb=document.createElement("span");sb.className="sb";sb.textContent=lf.sub||lf.url.replace(/^https?:\/\//,"");
+    t.append(nm,sb); a.appendChild(t);
+    if(lf.private){const g=document.createElement("span");g.className="tag";g.textContent="private";a.appendChild(g);}
+    if(lf.ext){const g=document.createElement("span");g.className="tag";g.textContent="social";a.appendChild(g);}
+    const st=document.createElement("i");st.className="st "+(status.get(lf.url)||"");st.title=status.get(lf.url)||"not checked";a.appendChild(st);
+    lf._st=st;
+    return a;
+  }
+  function select(id){
+    sel=id;
+    BRANCHES.forEach(b=>b._g.classList.toggle("on",b.id===id));
+    const body=$("#pbody"); body.innerHTML="";
+    if(id===null){
+      $("#ptitle").textContent=TRUNK.name; $("#pcol").style.color="var(--gold)"; $("#pcount").textContent=TRUNK.links.length+" roots";
+      const p=document.createElement("p");p.className="principle";p.textContent=TRUNK.sub;body.appendChild(p);
+      TRUNK.links.forEach(l=>body.appendChild(leafBtn(l,"#d8a23a")));
+      const ip=document.createElement("div");ip.className="ip";ip.textContent=TRUNK.ip;
+      const s=document.createElement("small");s.textContent="Will-Oats Universe · Fook'n Oats Enterprises · Supertech Services · every branch, every brand.";ip.appendChild(s);
+      body.appendChild(ip);
+      return;
+    }
+    const b=BRANCHES.find(x=>x.id===id);
+    $("#ptitle").textContent=b.name; $("#pcol").style.color=b.hex; $("#pcount").textContent=b.leaves.length?b.leaves.length+" links":"empty";
+    if(!b.leaves.length){const e=document.createElement("p");e.className="empty";e.textContent="Nothing online on this branch yet. Add a leaf in tree-data.js.";body.appendChild(e);return;}
+    b.leaves.forEach(lf=>body.appendChild(leafBtn(lf,b.hex)));
+    if(window.matchMedia("(max-width:860px)").matches) document.querySelector("aside").scrollIntoView({behavior:"smooth",block:"start"});
+  }
+
+  // ---- live check (no-cors HEAD: opaque on success, throws on network failure)
+  const ALL=[...TRUNK.links,...BRANCHES.flatMap(b=>b.leaves)].filter(l=>/^https?:/.test(l.url));
+  function paint(lf){
+    const s=status.get(lf.url)||"";
+    if(lf._st){lf._st.className="st "+s;lf._st.title=s||"not checked";}
+    if(lf._dot){lf._dot.setAttribute("fill",s==="down"?"#FF2222":s==="up"?"#66FF00":lf._dot.getAttribute("data-hex")||lf._dot.getAttribute("fill"));}
+  }
+  BRANCHES.forEach(b=>b.leaves.forEach(lf=>lf._dot&&lf._dot.setAttribute("data-hex",b.hex)));
+  async function ping(lf){
+    status.set(lf.url,"chk"); paint(lf);
+    const ctl=new AbortController(); const t=setTimeout(()=>ctl.abort(),7000);
+    try{ await fetch(lf.url,{method:"HEAD",mode:"no-cors",cache:"no-store",signal:ctl.signal}); status.set(lf.url,"up"); }
+    catch(e){ status.set(lf.url,"down"); }
+    clearTimeout(t); paint(lf);
+  }
+  async function checkAll(){
+    $("#checkbtn").disabled=true; $("#checkbtn").textContent="CHECKING…";
+    await Promise.all(ALL.map(ping));
+    const down=ALL.filter(l=>status.get(l.url)==="down").length;
+    $("#checkbtn").disabled=false; $("#checkbtn").textContent=down?down+" DOWN · RECHECK":"ALL LIVE · RECHECK";
+    $("#hud").textContent=down?(down>1?down+" leaves":"1 leaf")+" unreachable — red dots":"every leaf answered";
+  }
+  $("#checkbtn").addEventListener("click",checkAll);
+
+  // ---- start: deep link ?b=<id>, else trunk
+  const q=new URLSearchParams(location.search).get("b");
+  select(BRANCHES.some(b=>b.id===q)?q:null);
+  checkAll();
+})();
+</script>
+</body>
+</html>
