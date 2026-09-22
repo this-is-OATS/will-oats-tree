@@ -179,7 +179,7 @@ footer a:hover{color:var(--gold2)}
     t.append(nm,sb); a.appendChild(t);
     if(lf.private){const g=document.createElement("span");g.className="tag";g.textContent="private";a.appendChild(g);}
     if(lf.ext){const g=document.createElement("span");g.className="tag";g.textContent="social";a.appendChild(g);}
-    const st=document.createElement("i");st.className="st "+(status.get(lf.url)||"");st.title=status.get(lf.url)||"not checked";a.appendChild(st);
+    const st=document.createElement("i");st.className="st "+(status.get(lf.url)||"");st.title=lf.ext?"social — not pinged":(status.get(lf.url)||"not checked");a.appendChild(st);
     lf._st=st;
     return a;
   }
@@ -204,7 +204,7 @@ footer a:hover{color:var(--gold2)}
   }
 
   // ---- live check (no-cors HEAD: opaque on success, throws on network failure)
-  const ALL=[...TRUNK.links,...BRANCHES.flatMap(b=>b.leaves)].filter(l=>/^https?:/.test(l.url));
+  const ALL=[...TRUNK.links,...BRANCHES.flatMap(b=>b.leaves)].filter(l=>/^https?:/.test(l.url)&&!l.ext); // socials block cross-origin pings; not checked
   function paint(lf){
     const s=status.get(lf.url)||"";
     if(lf._st){lf._st.className="st "+s;lf._st.title=s||"not checked";}
