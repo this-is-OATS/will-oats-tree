@@ -6,4 +6,4 @@
 
 Static, no build step. `vercel.json` has `cleanUrls` so `/map` serves `map.html`. Push to `main` deploys to will-oats-tree.vercel.app.
 
-Versions: tree v3.3 · map v0.1.0
+Versions: tree v3.3 · map v0.1.1
