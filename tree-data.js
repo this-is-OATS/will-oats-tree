@@ -3,7 +3,7 @@
    leaf: { name, sub, url, back:true if the app has a "← back" link to a hub, private:true if login-gated, ext:true for socials }
    Branch order + names are the 12-branch Will-Oats Tree life architecture. Colors follow the 3D tree's zone spectrum.
 */
-const MAP_VERSION = "v0.1.0";
+const MAP_VERSION = "v0.1.1";
 
 const TRUNK = {
   name: "WILL-OATS TREE",
